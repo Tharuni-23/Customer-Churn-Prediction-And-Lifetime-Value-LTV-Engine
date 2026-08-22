@@ -1,119 +1,183 @@
 import os
 import pandas as pd
-from sqlalchemy import create_engine
+
+from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
+# ============================================================
+# DATABASE CONNECTION
+# ============================================================
+
 def get_engine():
-    db_user = os.environ.get("DB_USER", "postgres")
-    db_password = os.environ["DB_PASSWORD"]
-    db_host = os.environ.get("DB_HOST", "::1")
-    db_port = os.environ.get("DB_PORT", "5432")
-    db_name = os.environ.get("DB_NAME", "telco_churn")
+
+    db_user = os.environ.get(
+        "DB_USER",
+        "postgres"
+    )
+
+    db_password = os.environ[
+        "DB_PASSWORD"
+    ]
+
+    db_host = os.environ.get(
+        "DB_HOST",
+        "::1"
+    )
+
+    db_port = os.environ.get(
+        "DB_PORT",
+        "5432"
+    )
+
+    db_name = os.environ.get(
+        "DB_NAME",
+        "telco_churn"
+    )
 
     return create_engine(
-        f"postgresql+psycopg2://{db_user}:{db_password}@[{db_host}]:{db_port}/{db_name}"
+        f"postgresql+psycopg2://"
+        f"{db_user}:{db_password}@"
+        f"[{db_host}]:{db_port}/{db_name}"
     )
 
+
+# ============================================================
+# TEST CONNECTION
+# ============================================================
 
 def test_connection(engine=None):
+
     if engine is None:
         engine = get_engine()
 
-    try:
-        with engine.connect():
-            print("PostgreSQL connected successfully!")
-        return True
+    with engine.connect():
+        print(
+            "PostgreSQL connected successfully!"
+        )
 
-    except Exception as e:
-        print("Connection failed:")
-        print(e)
-        raise
+    return True
 
 
-def fetch_all_customers(engine=None):
-    if engine is None:
-        engine = get_engine()
+# ============================================================
+# FETCH PENDING CUSTOMERS
+# ============================================================
 
-    query = """
-    SELECT *
-    FROM public.customers
-    """
-
-    raw_df = pd.read_sql(query, engine)
-
-    print(
-        f"Fetched {len(raw_df)} rows, "
-        f"{raw_df.shape[1]} columns."
-    )
-
-    return raw_df
-
-
-def fetch_recently_updated_customers(engine=None):
-    if engine is None:
-        engine = get_engine()
-
-    query = """
-    SELECT *
-    FROM public.customers
-    WHERE updated_at >= CURRENT_TIMESTAMP - INTERVAL '5 minutes'
-    ORDER BY updated_at
-    """
-
-    raw_df = pd.read_sql(query, engine)
-
-    print(
-        f"Fetched {len(raw_df)} recently updated rows, "
-        f"{raw_df.shape[1]} columns."
-    )
-
-    return raw_df
-
-
-def fetch_customer_by_id(
-    customer_id,
-    engine=None,
-    id_column="customerid"
+def fetch_pending_customers(
+    engine=None
 ):
+
     if engine is None:
         engine = get_engine()
 
-    query = f"""
-    SELECT *
-    FROM public.customers
-    WHERE {id_column} = %(customer_id)s
+    query = """
+        SELECT *
+        FROM public.customers
+        WHERE updated_at > COALESCE(
+            (
+                SELECT last_successful_run
+                FROM pipeline_checkpoint
+                WHERE pipeline_name =
+                    'churn_ltv_pipeline'
+            ),
+            TIMESTAMP '1970-01-01'
+        )
+        AND churn IS NULL
+        ORDER BY updated_at;
     """
 
-    raw_df = pd.read_sql(
+    df = pd.read_sql(
         query,
-        engine,
-        params={"customer_id": customer_id}
+        engine
     )
 
-    if raw_df.empty:
-        raise ValueError(
-            f"No customer found with "
-            f"{id_column} = {customer_id!r}"
+    print(
+        f"Fetched {len(df)} pending customers."
+    )
+
+    return df
+
+
+# ============================================================
+# MARK PREDICTIONS COMPLETE
+# ============================================================
+
+def write_predictions(
+    result,
+    engine=None
+):
+
+    if engine is None:
+        engine = get_engine()
+
+    if result.empty:
+        return
+
+    sql = text("""
+        UPDATE public.customers
+        SET
+            churn = :churn,
+            churn_probability = :churn_probability,
+            predicted_ltv = :predicted_ltv,
+            prediction_at = CURRENT_TIMESTAMP
+        WHERE customerid = :customerid
+    """)
+
+    records = result[
+        [
+            "customerid",
+            "churn",
+            "churn_probability",
+            "predicted_ltv"
+        ]
+    ].to_dict(
+        orient="records"
+    )
+
+    with engine.begin() as connection:
+
+        connection.execute(
+            sql,
+            records
         )
 
     print(
-        f"Fetched customer {customer_id!r}."
+        f"Updated {len(records)} customers "
+        "with predictions."
     )
 
-    return raw_df
 
+# ============================================================
+# UPDATE CHECKPOINT
+# ============================================================
 
-if __name__ == "__main__":
+def update_checkpoint(
+    run_time,
+    engine=None
+):
 
-    eng = get_engine()
+    if engine is None:
+        engine = get_engine()
 
-    test_connection(eng)
+    sql = text("""
+        UPDATE pipeline_checkpoint
+        SET last_successful_run = :run_time
+        WHERE pipeline_name =
+            'churn_ltv_pipeline'
+    """)
 
-    df = fetch_recently_updated_customers(
-        eng
+    with engine.begin() as connection:
+
+        connection.execute(
+            sql,
+            {
+                "run_time": run_time
+            }
+        )
+
+    print(
+        "Pipeline checkpoint updated:",
+        run_time
     )
-
-    print(df.head())
