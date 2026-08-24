@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TelcoConnect - My Plan</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         APPLICATION LAYOUT
+    ====================================================== -->
+
+    <div class="app-layout">
+
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                TELCOCONNECT
+            </div>
+
+
+            <nav class="nav">
+
+                <!-- Dashboard -->
+                <a
+                    href="dashboard.html"
+                >
+                    ⌂
+                    <span>
+                        Dashboard
+                    </span>
+                </a>
+
+
+                <!-- My Profile -->
+                <a
+                    href="profile.html"
+                >
+                    👤
+                    <span>
+                        My Profile
+                    </span>
+                </a>
+
+
+                <!-- My Plan -->
+                <a
+                    href="plan.html"
+                    class="active"
+                >
+                    📦
+                    <span>
+                        My Plan
+                    </span>
+                </a>
+
+
+                <!-- Change Plan -->
+                <a
+                    href="change-plan.html"
+                >
+                    🔄
+                    <span>
+                        Change Plan
+                    </span>
+                </a>
+
+
+                <!-- Billing -->
+                <a
+                    href="billing.html"
+                >
+                    💳
+                    <span>
+                        Billing &amp; Payments
+                    </span>
+                </a>
+
+
+                <!-- Payment History -->
+                <a
+                    href="payments.html"
+                >
+                    🧾
+                    <span>
+                        Payment History
+                    </span>
+                </a>
+
+
+                <!-- Support -->
+                <a
+                    href="support.html"
+                >
+                    💬
+                    <span>
+                        Support
+                    </span>
+                </a>
+
+            </nav>
+
+
+            <!-- Logout -->
+
+            <div class="sidebar-bottom">
+
+                <button
+                    class="logout"
+                    id="logoutButton"
+                    type="button"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =================================================
+             MAIN CONTENT
+        ================================================== -->
+
+        <main class="main">
+
+
+            <!-- =================================================
+                 TOP BAR
+            ================================================== -->
+
+            <header class="topbar">
+
+                <div>
+
+                    <div class="kicker">
+                        CUSTOMER PORTAL
+                    </div>
+
+                    <h1>
+                        My Plan
+                    </h1>
+
+                </div>
+
+
+                <div class="top-right">
+
+                    <!-- Light / Dark Mode -->
+                    <button
+                        class="icon-btn"
+                        id="themeToggle"
+                        type="button"
+                        aria-label="Toggle theme"
+                    >
+                        🌙
+                    </button>
+
+
+                    <!-- Customer information -->
+                    <div class="profile-mini">
+
+                        <div
+                            class="avatar"
+                            data-customer-name
+                        >
+                            C
+                        </div>
+
+
+                        <div>
+
+                            <strong
+                                data-customer-name
+                            >
+                                Customer
+                            </strong>
+
+
+                            <span
+                                data-customer-id
+                            >
+                                CUST-XXXXX
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================================
+                 PAGE INTRO
+            ================================================== -->
+
+            <section class="hero">
+
+                <div class="accent">
+                    SUBSCRIPTION
+                </div>
+
+
+                <h2>
+                    My Current Plan
+                </h2>
+
+
+                <p>
+                    View your active subscription
+                    and renewal information.
+                </p>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PLAN SUMMARY
+            ================================================== -->
+
+            <section class="grid-2">
+
+
+                <!-- Active Plan -->
+
+                <div class="card">
+
+                    <div class="label">
+                        ACTIVE PLAN
+                    </div>
+
+
+                    <div class="value">
+                        1 Month Basic
+                    </div>
+
+
+                    <div class="muted">
+                        ₹499 · Active until
+                        24 Sep 2026
+                    </div>
+
+                </div>
+
+
+
+                <!-- Renewal -->
+
+                <div class="card">
+
+                    <div class="label">
+                        RENEWAL
+                    </div>
+
+
+                    <div class="value">
+                        24 Sep 2026
+                    </div>
+
+
+                    <div class="muted">
+                        Automatic renewal is currently enabled.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PLAN DETAILS
+            ================================================== -->
+
+            <section class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <div class="kicker">
+                            PLAN DETAILS
+                        </div>
+
+                        <h3>
+                            Subscription Details
+                        </h3>
+
+                    </div>
+
+
+                    <a
+                        href="change-plan.html"
+                        class="btn btn-primary"
+                    >
+                        Change Plan
+                    </a>
+
+                </div>
+
+
+                <div class="detail-grid">
+
+
+                    <!-- Duration -->
+
+                    <div class="detail">
+
+                        <span>
+                            Duration
+                        </span>
+
+                        <strong>
+                            1 Month
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Price -->
+
+                    <div class="detail">
+
+                        <span>
+                            Price
+                        </span>
+
+                        <strong>
+                            ₹499
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Start Date -->
+
+                    <div class="detail">
+
+                        <span>
+                            Start Date
+                        </span>
+
+                        <strong>
+                            24 Aug 2026
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Status -->
+
+                    <div class="detail">
+
+                        <span>
+                            Status
+                        </span>
+
+                        <strong>
+                            Active
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+
+            <div class="footer">
+
+                <span>
+                    TELCOCONNECT Customer Portal
+                </span>
+
+
+                <span>
+                    Need help?
+                    Contact Support
+                </span>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         SHARED JAVASCRIPT
+    ====================================================== -->
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>

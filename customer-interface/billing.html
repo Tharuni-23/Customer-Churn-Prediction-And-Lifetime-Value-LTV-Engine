@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TelcoConnect - Billing & Payments</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =========================================================
+         APPLICATION LAYOUT
+         ========================================================= -->
+
+    <div class="app-layout">
+
+
+        <!-- =====================================================
+             SIDEBAR
+             ===================================================== -->
+
+        <aside class="sidebar">
+
+            <!-- Brand -->
+            <div class="brand">
+                TELCOCONNECT
+            </div>
+
+
+            <!-- Navigation -->
+            <nav class="nav">
+
+                <!-- Dashboard -->
+                <a
+                    href="dashboard.html"
+                >
+                    ⌂
+                    <span>
+                        Dashboard
+                    </span>
+                </a>
+
+
+                <!-- Profile -->
+                <a
+                    href="profile.html"
+                >
+                    👤
+                    <span>
+                        My Profile
+                    </span>
+                </a>
+
+
+                <!-- Current Plan -->
+                <a
+                    href="plan.html"
+                >
+                    📦
+                    <span>
+                        My Plan
+                    </span>
+                </a>
+
+
+                <!-- Change Plan -->
+                <a
+                    href="change-plan.html"
+                >
+                    🔄
+                    <span>
+                        Change Plan
+                    </span>
+                </a>
+
+
+                <!-- Billing -->
+                <a
+                    href="billing.html"
+                    class="active"
+                >
+                    💳
+                    <span>
+                        Billing &amp; Payments
+                    </span>
+                </a>
+
+
+                <!-- Payment History -->
+                <a
+                    href="payments.html"
+                >
+                    🧾
+                    <span>
+                        Payment History
+                    </span>
+                </a>
+
+
+                <!-- Support -->
+                <a
+                    href="support.html"
+                >
+                    💬
+                    <span>
+                        Support
+                    </span>
+                </a>
+
+            </nav>
+
+
+            <!-- Logout -->
+            <div class="sidebar-bottom">
+
+                <button
+                    class="logout"
+                    id="logoutButton"
+                    type="button"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =====================================================
+             MAIN CONTENT
+             ===================================================== -->
+
+        <main class="main">
+
+
+            <!-- =================================================
+                 TOP BAR
+                 ================================================= -->
+
+            <header class="topbar">
+
+                <!-- Page heading -->
+                <div>
+
+                    <div class="kicker">
+                        CUSTOMER PORTAL
+                    </div>
+
+                    <h1>
+                        Billing &amp; Payments
+                    </h1>
+
+                </div>
+
+
+                <!-- Right side -->
+                <div class="top-right">
+
+
+                    <!-- Dark / Light mode -->
+                    <button
+                        class="icon-btn"
+                        id="themeToggle"
+                        type="button"
+                        aria-label="Toggle theme"
+                    >
+                        🌙
+                    </button>
+
+
+                    <!-- Customer details -->
+                    <div class="profile-mini">
+
+                        <div
+                            class="avatar"
+                            data-customer-name
+                        >
+                            C
+                        </div>
+
+
+                        <div>
+
+                            <strong
+                                data-customer-name
+                            >
+                                Customer
+                            </strong>
+
+                            <span
+                                data-customer-id
+                            >
+                                CUST-XXXXX
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================================
+                 BILLING INTRO
+                 ================================================= -->
+
+            <section class="hero">
+
+                <div class="accent">
+                    BILLING
+                </div>
+
+
+                <h2>
+                    Billing &amp; Payments
+                </h2>
+
+
+                <p>
+                    Review your current bill and
+                    payment options.
+                </p>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 BILLING SUMMARY
+                 ================================================= -->
+
+            <section class="grid-2">
+
+
+                <!-- Current bill -->
+
+                <div class="card">
+
+                    <div class="label">
+                        CURRENT BILL
+                    </div>
+
+
+                    <div class="value">
+                        ₹499
+                    </div>
+
+
+                    <div class="muted">
+                        Due 24 Sep 2026
+                    </div>
+
+
+                    <button
+                        class="btn btn-primary"
+                        id="payNow"
+                        type="button"
+                        style="margin-top:14px"
+                    >
+                        Pay Now
+                    </button>
+
+                </div>
+
+
+
+                <!-- Payment method -->
+
+                <div class="card">
+
+                    <div class="label">
+                        PAYMENT METHOD
+                    </div>
+
+
+                    <div
+                        class="value"
+                        style="font-size:18px"
+                    >
+                        UPI
+                    </div>
+
+
+                    <div class="muted">
+                        Change your payment method
+                        at checkout.
+                    </div>
+
+
+                    <button
+                        class="btn btn-secondary"
+                        id="changePayment"
+                        type="button"
+                        style="margin-top:14px"
+                    >
+                        Change Method
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 BILL DETAILS
+                 ================================================= -->
+
+            <section class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <div class="kicker">
+                            BILL DETAILS
+                        </div>
+
+                        <h3>
+                            Current Bill
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-grid">
+
+
+                    <!-- Plan charge -->
+
+                    <div class="detail">
+
+                        <span>
+                            Plan Charge
+                        </span>
+
+                        <strong>
+                            ₹499
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Taxes -->
+
+                    <div class="detail">
+
+                        <span>
+                            Taxes
+                        </span>
+
+                        <strong>
+                            Included
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Amount due -->
+
+                    <div class="detail">
+
+                        <span>
+                            Amount Due
+                        </span>
+
+                        <strong>
+                            ₹499
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Status -->
+
+                    <div class="detail">
+
+                        <span>
+                            Status
+                        </span>
+
+                        <strong>
+                            Pending
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 FOOTER
+                 ================================================= -->
+
+            <div class="footer">
+
+                <span>
+                    TELCOCONNECT Customer Portal
+                </span>
+
+
+                <span>
+                    Need help? Contact Support
+                </span>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+
+    <!-- =========================================================
+         BILLING PAGE JAVASCRIPT
+         ========================================================= -->
+
+    <script>
+
+        /*
+         * -------------------------------------------------------
+         * PAGE INITIALIZATION
+         * -------------------------------------------------------
+         *
+         * The billing page uses the shared app.js file for:
+         *   - Dark/light mode
+         *   - Customer information
+         *   - Logout
+         *
+         * The following code is only for billing-specific
+         * interactions.
+         * -------------------------------------------------------
+         */
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+
+                /*
+                 * ------------------------------------------------
+                 * PAY NOW BUTTON
+                 * ------------------------------------------------
+                 */
+
+                const payNow =
+                    document.getElementById(
+                        "payNow"
+                    );
+
+
+                payNow.addEventListener(
+                    "click",
+                    function () {
+
+                        alert(
+                            "Payment gateway will be connected later."
+                        );
+
+                    }
+                );
+
+
+                /*
+                 * ------------------------------------------------
+                 * CHANGE PAYMENT METHOD
+                 * ------------------------------------------------
+                 */
+
+                const changePayment =
+                    document.getElementById(
+                        "changePayment"
+                    );
+
+
+                changePayment.addEventListener(
+                    "click",
+                    function () {
+
+                        alert(
+                            "Payment method selection will be connected later."
+                        );
+
+                    }
+                );
+
+            }
+
+        );
+
+    </script>
+
+
+    <!-- Shared application JavaScript -->
+    <script src="app.js"></script>
+
+</body>
+
+</html>
