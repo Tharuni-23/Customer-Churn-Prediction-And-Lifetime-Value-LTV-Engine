@@ -1,8 +1,27 @@
+# ============================================================
+# database.py
+#
+# PURPOSE:
+#   Database connection and database read/write operations.
+#
+# IMPORTANT:
+#   - No ML logic here.
+#   - No preprocessing here.
+#   - No five-minute scheduling here.
+#   - Credentials come from .env.
+# ============================================================
+
 import os
+
 import pandas as pd
 
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
+
+
+# ============================================================
+# LOAD ENVIRONMENT VARIABLES
+# ============================================================
 
 load_dotenv()
 
@@ -12,36 +31,49 @@ load_dotenv()
 # ============================================================
 
 def get_engine():
+    """
+    Create and return the SQLAlchemy engine for Neon PostgreSQL.
+    """
 
-    db_user = os.environ.get(
-        "DB_USER",
-        "postgres"
+    db_user = os.getenv("DB_USER")
+    db_password = os.getenv("DB_PASSWORD")
+    db_host = os.getenv("DB_HOST")
+    db_port = os.getenv("DB_PORT", "5432")
+    db_name = os.getenv("DB_NAME")
+
+    # --------------------------------------------------------
+    # Validate credentials
+    # --------------------------------------------------------
+
+    if not all(
+        [
+            db_user,
+            db_password,
+            db_host,
+            db_name
+        ]
+    ):
+        raise ValueError(
+            "Database credentials are missing. "
+            "Check your .env file."
+        )
+
+    # --------------------------------------------------------
+    # Neon PostgreSQL connection
+    # --------------------------------------------------------
+
+    engine = create_engine(
+        (
+            "postgresql+psycopg2://"
+            f"{db_user}:{db_password}@"
+            f"{db_host}:{db_port}/{db_name}"
+            "?sslmode=require"
+        ),
+        pool_pre_ping=True,
+        pool_recycle=300
     )
 
-    db_password = os.environ[
-        "DB_PASSWORD"
-    ]
-
-    db_host = os.environ.get(
-        "DB_HOST",
-        "::1"
-    )
-
-    db_port = os.environ.get(
-        "DB_PORT",
-        "5432"
-    )
-
-    db_name = os.environ.get(
-        "DB_NAME",
-        "telco_churn"
-    )
-
-    return create_engine(
-        f"postgresql+psycopg2://"
-        f"{db_user}:{db_password}@"
-        f"[{db_host}]:{db_port}/{db_name}"
-    )
+    return engine
 
 
 # ============================================================
@@ -49,6 +81,9 @@ def get_engine():
 # ============================================================
 
 def test_connection(engine=None):
+    """
+    Test the PostgreSQL connection.
+    """
 
     if engine is None:
         engine = get_engine()
@@ -62,78 +97,103 @@ def test_connection(engine=None):
 
 
 # ============================================================
-# FETCH PENDING CUSTOMERS
+# FETCH CUSTOMERS CHANGED DURING A WINDOW
 # ============================================================
 
-def fetch_pending_customers(
+def fetch_customers_in_window(
+    window_start,
+    window_end,
     engine=None
 ):
+    """
+    Fetch customers whose updated_at falls inside
+    the supplied processing window.
+
+    New rows and updated rows are handled the same way:
+    they are expected to have churn = NULL until prediction
+    is completed.
+    """
 
     if engine is None:
         engine = get_engine()
 
-    query = """
+    query = text(
+        """
         SELECT *
         FROM public.customers
-        WHERE updated_at > COALESCE(
-            (
-                SELECT last_successful_run
-                FROM pipeline_checkpoint
-                WHERE pipeline_name =
-                    'churn_ltv_pipeline'
-            ),
-            TIMESTAMP '1970-01-01'
-        )
-        AND churn IS NULL
-        ORDER BY updated_at;
-    """
+        WHERE updated_at > :window_start
+          AND updated_at <= :window_end
+          AND churn IS NULL
+        ORDER BY updated_at, customerid
+        """
+    )
 
     df = pd.read_sql(
         query,
-        engine
+        engine,
+        params={
+            "window_start": window_start,
+            "window_end": window_end
+        }
     )
 
     print(
-        f"Fetched {len(df)} pending customers."
+        f"Fetched {len(df)} customers "
+        f"from the current processing window."
     )
 
     return df
 
 
 # ============================================================
-# MARK PREDICTIONS COMPLETE
+# WRITE PREDICTIONS
 # ============================================================
 
 def write_predictions(
     result,
     engine=None
 ):
+    """
+    Write churn and LTV predictions back to customers.
+    """
 
     if engine is None:
         engine = get_engine()
 
     if result.empty:
+
+        print(
+            "No predictions to update."
+        )
+
         return
 
-    sql = text("""
+    sql = text(
+        """
         UPDATE public.customers
+
         SET
             churn = :churn,
             churn_probability = :churn_probability,
             predicted_ltv = :predicted_ltv,
             prediction_at = CURRENT_TIMESTAMP
-        WHERE customerid = :customerid
-    """)
 
-    records = result[
-        [
-            "customerid",
-            "churn",
-            "churn_probability",
-            "predicted_ltv"
+        WHERE customerid = :customerid
+        """
+    )
+
+    records = (
+        result[
+            [
+                "customerid",
+                "churn",
+                "churn_probability",
+                "predicted_ltv"
+            ]
         ]
-    ].to_dict(
-        orient="records"
+        .to_dict(
+            orient="records"
+        )
     )
 
     with engine.begin() as connection:
@@ -145,39 +205,5 @@ def write_predictions(
 
     print(
         f"Updated {len(records)} customers "
-        "with predictions."
-    )
-
-
-# ============================================================
-# UPDATE CHECKPOINT
-# ============================================================
-
-def update_checkpoint(
-    run_time,
-    engine=None
-):
-
-    if engine is None:
-        engine = get_engine()
-
-    sql = text("""
-        UPDATE pipeline_checkpoint
-        SET last_successful_run = :run_time
-        WHERE pipeline_name =
-            'churn_ltv_pipeline'
-    """)
-
-    with engine.begin() as connection:
-
-        connection.execute(
-            sql,
-            {
-                "run_time": run_time
-            }
-        )
-
-    print(
-        "Pipeline checkpoint updated:",
-        run_time
+        f"with predictions."
     )

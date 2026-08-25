@@ -77,10 +77,24 @@ SERVICE_COLLAPSE_MAPPING = {
 }
 
 
+# ------------------------------------------------------------
+# TenureGroup mapping
+#
+# Accept both singular and plural spellings so incoming
+# PostgreSQL data does not become NaN because of a text mismatch.
+# ------------------------------------------------------------
+
 TENURE_MAPPING = {
     "0-1 Year": 0,
+    "0-1 Years": 0,
+
+    "1-2 Year": 1,
     "1-2 Years": 1,
+
+    "2-4 Year": 2,
     "2-4 Years": 2,
+
+    "4-6 Year": 3,
     "4-6 Years": 3
 }
 
@@ -116,20 +130,25 @@ def normalize_columns(raw_df):
     """
     Makes column-name matching robust.
 
-    IMPORTANT:
-    This does NOT normalize customer values.
-    It only handles column names coming from PostgreSQL.
+    This only normalizes column names.
+    Customer values are not modified here.
     """
 
     df = raw_df.copy()
 
+    # --------------------------------------------------------
     # Strip spaces from column names
+    # --------------------------------------------------------
+
     df.columns = [
         str(col).strip()
         for col in df.columns
     ]
 
+    # --------------------------------------------------------
     # Case-insensitive matching
+    # --------------------------------------------------------
+
     lower_to_actual = {
         col.lower(): col
         for col in df.columns
@@ -153,7 +172,6 @@ def normalize_columns(raw_df):
             missing.append(canonical)
 
     if missing:
-
         raise ValueError(
             "Missing required columns:\n"
             f"{missing}\n\n"
@@ -167,7 +185,7 @@ def normalize_columns(raw_df):
 
     # --------------------------------------------------------
     # updated_at is pipeline metadata only.
-    # Never send it to ML.
+    # Never send it to the ML model.
     # --------------------------------------------------------
 
     if "updated_at" in df.columns:
@@ -180,8 +198,9 @@ def normalize_columns(raw_df):
 
 
 # ============================================================
-# 4. BUILD PACKAGE
-#    RUN ONLY WHEN CREATING/REBUILDING THE PACKAGE
+# 4. BUILD PREPROCESSING PACKAGE
+#
+# Run this only when creating/rebuilding the package.
 # ============================================================
 
 def build_preprocessing_package(
@@ -190,11 +209,12 @@ def build_preprocessing_package(
 ):
 
     # Work on a copy
-    df = normalize_columns(
-        raw_df
-    )
+    df = normalize_columns(raw_df)
 
+    # --------------------------------------------------------
     # Remove ID + target
+    # --------------------------------------------------------
+
     data = df.drop(
         columns=[
             "customerID",
@@ -266,8 +286,11 @@ def build_preprocessing_package(
             errors="coerce"
         )
 
+    # --------------------------------------------------------
     # Existing training behavior:
     # invalid/blank charge values become 0
+    # --------------------------------------------------------
+
     data[
         NUMERIC_CHARGE_COLUMNS
     ] = data[
@@ -284,7 +307,10 @@ def build_preprocessing_package(
         drop_first=True
     )
 
+    # --------------------------------------------------------
     # bool -> int
+    # --------------------------------------------------------
+
     bool_columns = data.select_dtypes(
         include="bool"
     ).columns
@@ -296,7 +322,7 @@ def build_preprocessing_package(
     ].astype(int)
 
     # --------------------------------------------------------
-    # Final numeric check
+    # Final numeric conversion
     # --------------------------------------------------------
 
     for col in data.columns:
@@ -332,7 +358,7 @@ def build_preprocessing_package(
     if non_numeric:
 
         raise ValueError(
-            f"Non-numeric columns remain: "
+            "Non-numeric columns remain: "
             f"{non_numeric}"
         )
 
@@ -453,9 +479,7 @@ def transform(
 ):
 
     # Always work on a copy
-    df = normalize_columns(
-        raw_df
-    )
+    df = normalize_columns(raw_df)
 
     # --------------------------------------------------------
     # Remove fields that are not model inputs
@@ -593,7 +617,10 @@ def transform(
         ]
     )
 
+    # --------------------------------------------------------
     # bool -> int
+    # --------------------------------------------------------
+
     bool_columns = data.select_dtypes(
         include="bool"
     ).columns
@@ -629,11 +656,39 @@ def transform(
     # Final validation
     # --------------------------------------------------------
 
-    if data.isnull().sum().sum() > 0:
+    nan_columns = data.columns[
+        data.isnull().any()
+    ].tolist()
+
+    if nan_columns:
+
+        print("\n" + "=" * 70)
+        print(
+            "NaN VALUES DETECTED AFTER TRANSFORMATION"
+        )
+        print("=" * 70)
+
+        for col in nan_columns:
+
+            print(
+                f"\nColumn: {col}"
+            )
+
+            print(
+                data.loc[
+                    data[col].isnull(),
+                    [col]
+                ]
+            )
 
         raise ValueError(
-            "NaN values detected after transformation."
+            "NaN values detected after transformation. "
+            f"Columns: {nan_columns}"
         )
+
+    # --------------------------------------------------------
+    # Infinite-value validation
+    # --------------------------------------------------------
 
     if np.isinf(
         data.to_numpy(
