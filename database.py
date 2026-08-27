@@ -11,6 +11,7 @@
 #   - Credentials come from .env.
 # ============================================================
 
+
 import os
 
 import pandas as pd
@@ -41,6 +42,7 @@ def get_engine():
     db_port = os.getenv("DB_PORT", "5432")
     db_name = os.getenv("DB_NAME")
 
+
     # --------------------------------------------------------
     # Validate credentials
     # --------------------------------------------------------
@@ -53,10 +55,12 @@ def get_engine():
             db_name
         ]
     ):
+
         raise ValueError(
             "Database credentials are missing. "
             "Check your .env file."
         )
+
 
     # --------------------------------------------------------
     # Neon PostgreSQL connection
@@ -73,6 +77,7 @@ def get_engine():
         pool_recycle=300
     )
 
+
     return engine
 
 
@@ -86,12 +91,16 @@ def test_connection(engine=None):
     """
 
     if engine is None:
+
         engine = get_engine()
 
+
     with engine.connect():
+
         print(
             "PostgreSQL connected successfully!"
         )
+
 
     return True
 
@@ -106,27 +115,43 @@ def fetch_customers_in_window(
     engine=None
 ):
     """
-    Fetch customers whose updated_at falls inside
+    Fetch ALL customers whose updated_at falls inside
     the supplied processing window.
 
-    New rows and updated rows are handled the same way:
-    they are expected to have churn = NULL until prediction
-    is completed.
+    This includes:
+
+        1. Newly inserted customers
+        2. Existing customers that were updated
+
+    IMPORTANT:
+        We intentionally DO NOT check:
+
+            churn IS NULL
+
+        because an existing customer may already have an
+        old prediction and still require a NEW prediction
+        after their customer information changes.
     """
 
     if engine is None:
+
         engine = get_engine()
+
 
     query = text(
         """
         SELECT *
         FROM public.customers
+
         WHERE updated_at > :window_start
           AND updated_at <= :window_end
-          AND churn IS NULL
-        ORDER BY updated_at, customerid
+
+        ORDER BY
+            updated_at,
+            customerid
         """
     )
+
 
     df = pd.read_sql(
         query,
@@ -137,10 +162,12 @@ def fetch_customers_in_window(
         }
     )
 
+
     print(
         f"Fetched {len(df)} customers "
         f"from the current processing window."
     )
+
 
     return df
 
@@ -158,7 +185,9 @@ def write_predictions(
     """
 
     if engine is None:
+
         engine = get_engine()
+
 
     if result.empty:
 
@@ -167,6 +196,7 @@ def write_predictions(
         )
 
         return
+
 
     sql = text(
         """
@@ -182,6 +212,7 @@ def write_predictions(
         """
     )
 
+
     records = (
         result[
             [
@@ -196,12 +227,14 @@ def write_predictions(
         )
     )
 
+
     with engine.begin() as connection:
 
         connection.execute(
             sql,
             records
         )
+
 
     print(
         f"Updated {len(records)} customers "
