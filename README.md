@@ -31,3 +31,6 @@ ANN was evaluated as a nonlinear model and achieved 75.16% accuracy.
 
 ## XGBoost
 Tuned XGBoost achieved 74.24% accuracy, 80.75% recall, and 0.8463 ROC-AUC.
+
+## Confusion Matrix
+Confusion matrices were used to compare correctly and incorrectly predicted churn and non-churn customers.
