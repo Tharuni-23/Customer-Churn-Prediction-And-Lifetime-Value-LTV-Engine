@@ -1,138 +1,48 @@
-<div align="center">
 
-# Customer Churn Prediction & Lifetime Value (LTV) Engine
+## Machine Learning Models
 
-### An integrated machine learning system for customer churn prediction and Lifetime Value estimation
+Three models were evaluated for customer churn prediction: Logistic Regression, Artificial Neural Network (ANN), and XGBoost.
 
-<p>
-  <img src="https://img.shields.io/badge/Python-3.x-blue?logo=python" alt="Python">
-  <img src="https://img.shields.io/badge/XGBoost-Machine%20Learning-orange" alt="XGBoost">
-  <img src="https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi" alt="FastAPI">
-  <img src="https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/Neon-PostgreSQL-black" alt="Neon">
-  <img src="https://img.shields.io/badge/HTML%2FCSS%2FJS-Frontend-E34F26" alt="Frontend">
-</p>
 
-</div>
+## Model Comparison
 
----
+ANN achieved the highest accuracy at 75.16%. Logistic Regression achieved 73.95% accuracy. Tuned XGBoost achieved 74.24% accuracy, with the highest recall of 80.75% and highest ROC-AUC of 0.8463.
 
-## Overview
 
-Customer Churn Prediction & Lifetime Value (LTV) Engine is a team-developed project for analyzing customer behavior and generating two important business predictions:
+## Model Selection
 
-**Customer Churn Probability** and **Customer Lifetime Value (LTV)**.
+XGBoost was selected because it achieved the highest recall and ROC-AUC among the evaluated models. Higher recall is important for churn prediction because it helps identify more customers who are actually likely to leave. ANN remains a potential future improvement because it is more data-hungry.
 
-The system combines machine learning, customer data processing, Neon PostgreSQL, scheduled prediction, FastAPI services, controlled test-data generation, and a customer-facing web interface.
 
-The repository is divided into separate branches so that machine learning development, customer portal development, and the integrated prediction system can be developed independently.
+## Project Overview
+This project predicts customer churn and estimates customer lifetime value using machine learning.
 
----
+## Dataset
+The project uses the IBM Telco Customer Churn dataset for customer churn analysis.
 
-## Objectives
+## Data Preprocessing
+The data was cleaned, encoded, and prepared before training the machine learning models.
 
-<table>
-<tr>
-<td>
+## Logistic Regression
+Logistic Regression was used as a baseline classification model for churn prediction.
 
-### Prediction
+## Artificial Neural Network
+ANN was evaluated as a nonlinear model and achieved 75.16% accuracy.
 
-Predict the probability that a customer will churn.
+## XGBoost
+Tuned XGBoost achieved 74.24% accuracy, 80.75% recall, and 0.8463 ROC-AUC.
 
-</td>
-<td>
+## Confusion Matrix
+Confusion matrices were used to compare correctly and incorrectly predicted churn and non-churn customers.
 
-### Customer Value
+## Model Selection
+XGBoost was selected because it achieved the highest recall and ROC-AUC, which are important for identifying customers likely to churn.
 
-Estimate the expected Lifetime Value of a customer.
+## Model Selection
+XGBoost was selected because it achieved the highest recall and ROC-AUC, which are important for identifying customers likely to churn.
 
-</td>
-</tr>
+## Future Scope
+ANN can be further explored with more training data and additional development because neural networks are more data-hungry.
 
-<tr>
-<td>
-
-### Change Detection
-
-Detect newly inserted and updated customer records.
-
-</td>
-<td>
-
-### Automation
-
-Automatically process changed records through the prediction pipeline.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-### Database Integration
-
-Store customer information and prediction results in PostgreSQL.
-
-</td>
-<td>
-
-### Customer Experience
-
-Provide a customer-facing portal for account and subscription management.
-
-</td>
-</tr>
-</table>
-
----
-
-## Technology Stack
-
-| Category | Technologies |
-|---|---|
-| Programming | Python |
-| Machine Learning | Scikit-learn, XGBoost |
-| Data Processing | Pandas, NumPy |
-| Database | PostgreSQL, Neon PostgreSQL |
-| Database Access | SQLAlchemy |
-| Backend API | FastAPI |
-| Frontend | HTML5, CSS3, JavaScript |
-| Scheduling | Python Scheduler |
-| Model Storage | JSON, PKL |
-
----
-
-## System Architecture
-
-<div align="center">
-
-```text
-                         CUSTOMER / TEST INTERFACE
-                                    |
-                                    v
-                                 FastAPI
-                                    |
-                                    v
-                           Neon PostgreSQL
-                                    |
-                                    v
-                           Change Detection
-                                    |
-                                    v
-                               Scheduler
-                                    |
-                                    v
-                            Preprocessing
-                                    |
-                         +----------+----------+
-                         |                     |
-                         v                     v
-                  Churn Prediction       LTV Prediction
-                         |                     |
-                         +----------+----------+
-                                    |
-                                    v
-                           Prediction Results
-                                    |
-                                    v
-                           Neon PostgreSQL
+## Machine Learning Module
+This module contains customer churn prediction models and model evaluation.
