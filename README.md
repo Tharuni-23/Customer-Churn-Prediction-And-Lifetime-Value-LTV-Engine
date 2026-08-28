@@ -40,3 +40,6 @@ XGBoost was selected because it achieved the highest recall and ROC-AUC, which a
 
 ## Model Selection
 XGBoost was selected because it achieved the highest recall and ROC-AUC, which are important for identifying customers likely to churn.
+
+## Future Scope
+ANN can be further explored with more training data and additional development because neural networks are more data-hungry.
