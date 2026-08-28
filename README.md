@@ -16,3 +16,6 @@ XGBoost was selected because it achieved the highest recall and ROC-AUC among th
 
 ## Project Overview
 This project predicts customer churn and estimates customer lifetime value using machine learning.
+
+## Dataset
+The project uses the IBM Telco Customer Churn dataset for customer churn analysis.
