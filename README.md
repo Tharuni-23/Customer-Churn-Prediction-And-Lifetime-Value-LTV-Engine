@@ -28,3 +28,6 @@ Logistic Regression was used as a baseline classification model for churn predic
 
 ## Artificial Neural Network
 ANN was evaluated as a nonlinear model and achieved 75.16% accuracy.
+
+## XGBoost
+Tuned XGBoost achieved 74.24% accuracy, 80.75% recall, and 0.8463 ROC-AUC.
