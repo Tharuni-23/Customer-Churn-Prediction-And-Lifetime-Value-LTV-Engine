@@ -43,3 +43,6 @@ XGBoost was selected because it achieved the highest recall and ROC-AUC, which a
 
 ## Future Scope
 ANN can be further explored with more training data and additional development because neural networks are more data-hungry.
+
+## Machine Learning Module
+This module contains customer churn prediction models and model evaluation.
