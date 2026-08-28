@@ -25,3 +25,6 @@ The data was cleaned, encoded, and prepared before training the machine learning
 
 ## Logistic Regression
 Logistic Regression was used as a baseline classification model for churn prediction.
+
+## Artificial Neural Network
+ANN was evaluated as a nonlinear model and achieved 75.16% accuracy.
