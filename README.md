@@ -8,3 +8,8 @@ Three models were evaluated for customer churn prediction: Logistic Regression, 
 
 ANN achieved the highest accuracy at 75.16%. Logistic Regression achieved 73.95% accuracy. Tuned XGBoost achieved 74.24% accuracy, with the highest recall of 80.75% and highest ROC-AUC of 0.8463.
 
+
+## Model Selection
+
+XGBoost was selected because it achieved the highest recall and ROC-AUC among the evaluated models. Higher recall is important for churn prediction because it helps identify more customers who are actually likely to leave. ANN remains a potential future improvement because it is more data-hungry.
+
