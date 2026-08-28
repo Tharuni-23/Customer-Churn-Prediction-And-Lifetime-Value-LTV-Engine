@@ -34,3 +34,6 @@ Tuned XGBoost achieved 74.24% accuracy, 80.75% recall, and 0.8463 ROC-AUC.
 
 ## Confusion Matrix
 Confusion matrices were used to compare correctly and incorrectly predicted churn and non-churn customers.
+
+## Model Selection
+XGBoost was selected because it achieved the highest recall and ROC-AUC, which are important for identifying customers likely to churn.
