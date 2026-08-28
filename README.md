@@ -37,3 +37,6 @@ Confusion matrices were used to compare correctly and incorrectly predicted chur
 
 ## Model Selection
 XGBoost was selected because it achieved the highest recall and ROC-AUC, which are important for identifying customers likely to churn.
+
+## Model Selection
+XGBoost was selected because it achieved the highest recall and ROC-AUC, which are important for identifying customers likely to churn.
