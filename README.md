@@ -22,3 +22,6 @@ The project uses the IBM Telco Customer Churn dataset for customer churn analysi
 
 ## Data Preprocessing
 The data was cleaned, encoded, and prepared before training the machine learning models.
+
+## Logistic Regression
+Logistic Regression was used as a baseline classification model for churn prediction.
