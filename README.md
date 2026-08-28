@@ -19,3 +19,6 @@ This project predicts customer churn and estimates customer lifetime value using
 
 ## Dataset
 The project uses the IBM Telco Customer Churn dataset for customer churn analysis.
+
+## Data Preprocessing
+The data was cleaned, encoded, and prepared before training the machine learning models.
