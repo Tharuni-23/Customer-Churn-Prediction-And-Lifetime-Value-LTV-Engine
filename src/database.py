@@ -156,3 +156,30 @@ ROUND(
         row = result.mappings().first()
 
         return dict(row)
+def write_prediction(
+    customer_id,
+    predicted_churn,
+    churn_probability,
+    predicted_ltv
+):
+    query = text("""
+        UPDATE customer_churn
+        SET
+            predicted_churn = :predicted_churn,
+            churn_probability = :churn_probability,
+            predicted_ltv = :predicted_ltv,
+            prediction_at = CURRENT_TIMESTAMP
+        WHERE "customerID" = :customer_id;
+    """)
+
+    with engine.connect() as connection:
+        connection.execute(
+            query,
+            {
+                "customer_id": customer_id,
+                "predicted_churn": predicted_churn,
+                "churn_probability": churn_probability,
+                "predicted_ltv": predicted_ltv
+            }
+        )
+        connection.commit()
