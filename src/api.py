@@ -402,9 +402,7 @@ def get_customer(customer_id: str):
 
 @app.get("/dashboard/customers")
 def dashboard_customers():
-
     try:
-
         engine = db.get_engine()
 
         query = text("""
@@ -421,14 +419,17 @@ def dashboard_customers():
                 "Churn",
                 "TenureGroup",
                 "TotalServices",
-                "Mails"
+                "Mails",
+                predicted_churn,
+                churn_probability,
+                predicted_ltv,
+                prediction_at
             FROM customer_churn
             ORDER BY "customerID"
             LIMIT 100;
         """)
 
         with engine.connect() as connection:
-
             result = connection.execute(query)
 
             customers = [
@@ -442,7 +443,6 @@ def dashboard_customers():
         }
 
     except Exception as e:
-
         raise HTTPException(
             status_code=500,
             detail=str(e)
