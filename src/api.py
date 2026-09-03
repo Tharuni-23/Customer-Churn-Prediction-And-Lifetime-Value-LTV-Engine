@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 from . import database as db
+from .prediction_pipeline import predict_customer
 
 
 # ============================================================
@@ -230,6 +231,28 @@ def dashboard_customers():
             "count": len(customers),
             "customers": customers
         }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+# ============================================================
+# PREDICT CUSTOMER
+# ============================================================
+
+@app.post("/predict/{customer_id}")
+def predict_customer_api(customer_id: str):
+    try:
+        result = predict_customer(customer_id)
+
+        return result
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
 
     except Exception as e:
         raise HTTPException(
