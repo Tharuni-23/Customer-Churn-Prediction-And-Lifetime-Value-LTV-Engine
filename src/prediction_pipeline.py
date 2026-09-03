@@ -98,3 +98,94 @@ def predict_customer(customer_id):
     }
 
 
+# ============================================================
+# PREDICT ALL CUSTOMERS
+# ============================================================
+
+def predict_all_customers():
+
+    # Load models only once
+    package, churn_model, ltv_model = load_models()
+
+    # Get all customers from PostgreSQL
+    df = db.get_all_customers()
+
+    if df.empty:
+        return {
+            "count": 0,
+            "message": "No customers found"
+        }
+
+    print(f"Loaded {len(df)} customers")
+
+    # --------------------------------------------------------
+    # PREPROCESS ALL CUSTOMERS
+    # --------------------------------------------------------
+
+    X = transform(df, package)
+
+    print(f"Processed feature shape: {X.shape}")
+
+    # --------------------------------------------------------
+    # CHURN PREDICTION
+    # --------------------------------------------------------
+
+    churn_probabilities = (
+        churn_model.predict_proba(X)[:, 1]
+    )
+
+    predicted_churn = [
+        "Yes" if probability >= 0.50 else "No"
+        for probability in churn_probabilities
+    ]
+
+    # --------------------------------------------------------
+    # LTV PREDICTION
+    # --------------------------------------------------------
+
+    predicted_ltv = ltv_model.predict(X)
+
+    # --------------------------------------------------------
+    # SAVE EACH CUSTOMER'S PREDICTION
+    # --------------------------------------------------------
+
+    results = []
+
+    for i in range(len(df)):
+
+        customer_id = df.iloc[i]["customerID"]
+
+        probability = float(
+            churn_probabilities[i]
+        )
+
+        churn = predicted_churn[i]
+
+        ltv = float(
+            predicted_ltv[i]
+        )
+
+        db.write_prediction(
+            customer_id,
+            churn,
+            probability,
+            ltv
+        )
+
+        results.append({
+            "customerID": customer_id,
+            "predicted_churn": churn,
+            "churn_probability": probability,
+            "predicted_ltv": ltv
+        })
+
+    print(
+        f"Successfully saved predictions for "
+        f"{len(results)} customers"
+    )
+
+    return {
+        "count": len(results),
+        "message": "Predictions generated successfully",
+        "results": results
+    }
