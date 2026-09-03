@@ -301,3 +301,58 @@ def dashboard_risk_summary():
             status_code=500,
             detail=str(e)
         )
+# ============================================================
+# DASHBOARD CUSTOMER DETAILS
+# ============================================================
+
+@app.get("/dashboard/customers/{customer_id}")
+def dashboard_customer_details(customer_id: str):
+    try:
+        engine = db.get_engine()
+
+        query = text("""
+            SELECT
+                "customerID",
+                "gender",
+                "SeniorCitizen",
+                "Partner",
+                "Dependents",
+                "tenure",
+                "Contract",
+                "MonthlyCharges",
+                "TotalCharges",
+                "Churn",
+                "TenureGroup",
+                "TotalServices",
+                "Mails",
+                predicted_churn,
+                churn_probability,
+                predicted_ltv,
+                prediction_at
+            FROM customer_churn
+            WHERE "customerID" = :customer_id;
+        """)
+
+        with engine.connect() as connection:
+            result = connection.execute(
+                query,
+                {"customer_id": customer_id}
+            )
+            row = result.mappings().first()
+
+        if row is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Customer not found"
+            )
+
+        return dict(row)
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
