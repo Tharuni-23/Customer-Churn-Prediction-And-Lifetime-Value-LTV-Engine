@@ -259,3 +259,45 @@ def predict_customer_api(customer_id: str):
             status_code=500,
             detail=str(e)
         )
+# ============================================================
+# CHURN RISK SUMMARY
+# ============================================================
+
+@app.get("/dashboard/risk-summary")
+def dashboard_risk_summary():
+    try:
+        engine = db.get_engine()
+
+        query = text("""
+            SELECT
+                COUNT(*) FILTER (
+                    WHERE churn_probability >= 0.70
+                ) AS high_risk_customers,
+
+                COUNT(*) FILTER (
+                    WHERE churn_probability >= 0.40
+                    AND churn_probability < 0.70
+                ) AS medium_risk_customers,
+
+                COUNT(*) FILTER (
+                    WHERE churn_probability < 0.40
+                ) AS low_risk_customers,
+
+                COUNT(*) FILTER (
+                    WHERE churn_probability IS NOT NULL
+                ) AS customers_with_predictions
+
+            FROM customer_churn;
+        """)
+
+        with engine.connect() as connection:
+            result = connection.execute(query)
+            row = result.mappings().first()
+
+        return dict(row)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
