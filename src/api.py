@@ -356,3 +356,46 @@ def dashboard_customer_details(customer_id: str):
             status_code=500,
             detail=str(e)
         )
+# ============================================================
+# TOP AT-RISK CUSTOMERS
+# ============================================================
+
+@app.get("/dashboard/top-risk")
+def dashboard_top_risk():
+    try:
+        engine = db.get_engine()
+
+        query = text("""
+            SELECT
+                "customerID",
+                "Contract",
+                "tenure",
+                "MonthlyCharges",
+                predicted_churn,
+                churn_probability,
+                predicted_ltv,
+                prediction_at
+            FROM customer_churn
+            WHERE churn_probability IS NOT NULL
+            ORDER BY churn_probability DESC
+            LIMIT 10;
+        """)
+
+        with engine.connect() as connection:
+            result = connection.execute(query)
+
+            customers = [
+                dict(row)
+                for row in result.mappings()
+            ]
+
+        return {
+            "count": len(customers),
+            "customers": customers
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
