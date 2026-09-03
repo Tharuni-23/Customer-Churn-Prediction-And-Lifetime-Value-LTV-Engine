@@ -182,4 +182,4 @@ def write_prediction(
                 "predicted_ltv": predicted_ltv
             }
         )
-        connection.commit()
+        connection.commit()     
