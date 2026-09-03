@@ -336,3 +336,135 @@ async function loadDashboard() {
 // ============================================================
 
 loadDashboard();
+// ============================================================
+// SEARCH CUSTOMER
+// ============================================================
+
+async function searchCustomer() {
+
+    const customerId =
+        document.getElementById(
+            "customerSearch"
+        ).value.trim();
+
+    const details =
+        document.getElementById(
+            "customerDetails"
+        );
+
+
+    if (!customerId) {
+
+        details.innerHTML =
+            "<p>Please enter a Customer ID.</p>";
+
+        return;
+    }
+
+
+    try {
+
+        const customer =
+            await fetchJSON(
+                `/dashboard/customers/${customerId}`
+            );
+
+
+        const risk =
+            getRisk(
+                customer.churn_probability
+            );
+
+
+        details.innerHTML = `
+
+            <div class="customer-detail-grid">
+
+                <div>
+                    <strong>Customer ID</strong>
+                    <span>
+                        ${customer.customerID}
+                    </span>
+                </div>
+
+                <div>
+                    <strong>Contract</strong>
+                    <span>
+                        ${customer.Contract ?? "-"}
+                    </span>
+                </div>
+
+                <div>
+                    <strong>Tenure</strong>
+                    <span>
+                        ${customer.tenure ?? "-"} months
+                    </span>
+                </div>
+
+                <div>
+                    <strong>Monthly Charges</strong>
+                    <span>
+                        ₹${Number(
+                            customer.MonthlyCharges ?? 0
+                        ).toFixed(2)}
+                    </span>
+                </div>
+
+                <div>
+                    <strong>Actual Churn</strong>
+                    <span>
+                        ${customer.Churn ?? "-"}
+                    </span>
+                </div>
+
+                <div>
+                    <strong>Predicted Churn</strong>
+                    <span>
+                        ${customer.predicted_churn ?? "-"}
+                    </span>
+                </div>
+
+                <div>
+                    <strong>Churn Probability</strong>
+                    <span class="${risk.className}">
+                        ${
+                            customer.churn_probability !== null &&
+                            customer.churn_probability !== undefined
+                            ? (
+                                Number(
+                                    customer.churn_probability
+                                ) * 100
+                              ).toFixed(2) + "%"
+                            : "-"
+                        }
+                    </span>
+                </div>
+
+                <div>
+                    <strong>Predicted LTV</strong>
+                    <span>
+                        ${
+                            customer.predicted_ltv !== null &&
+                            customer.predicted_ltv !== undefined
+                            ? "₹" +
+                              Number(
+                                  customer.predicted_ltv
+                              ).toFixed(2)
+                            : "-"
+                        }
+                    </span>
+                </div>
+
+            </div>
+        `;
+
+    } catch (err) {
+
+        console.error(err);
+
+        details.innerHTML =
+            "<p class='error'>" +
+            "Customer not found or API error." +
+            "</p>";
+    }
+}
