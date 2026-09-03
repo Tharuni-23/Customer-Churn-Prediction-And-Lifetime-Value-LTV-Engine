@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from . import database as db
 from .prediction_pipeline import predict_customer
@@ -14,6 +15,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5500",
+        "http://127.0.0.1:5500"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ============================================================
 # HOME
@@ -189,7 +200,6 @@ def get_customer(customer_id: str):
 # ============================================================
 # DASHBOARD CUSTOMERS
 # ============================================================
-
 @app.get("/dashboard/customers")
 def dashboard_customers():
     try:

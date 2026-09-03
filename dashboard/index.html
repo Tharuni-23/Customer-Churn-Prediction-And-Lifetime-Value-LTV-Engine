@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Customer Churn & LTV Manager Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div>
+            <h1>Customer Churn & LTV</h1>
+            <p>Manager Dashboard</p>
+        </div>
+
+        <button id="refreshBtn" onclick="loadDashboard()">
+            Refresh
+        </button>
+    </header>
+
+
+    <main class="container">
+
+        <!-- SUMMARY CARDS -->
+
+        <section class="cards">
+
+            <div class="card">
+                <h3>Total Customers</h3>
+                <p id="totalCustomers">-</p>
+            </div>
+
+            <div class="card">
+                <h3>Churned Customers</h3>
+                <p id="churnedCustomers">-</p>
+            </div>
+
+            <div class="card">
+                <h3>Retained Customers</h3>
+                <p id="retainedCustomers">-</p>
+            </div>
+
+            <div class="card">
+                <h3>Avg Monthly Charges</h3>
+                <p id="avgCharges">-</p>
+            </div>
+
+            <div class="card">
+                <h3>Monthly Revenue</h3>
+                <p id="monthlyRevenue">-</p>
+            </div>
+
+            <div class="card">
+                <h3>Avg Predicted LTV</h3>
+                <p id="avgLtv">-</p>
+            </div>
+
+        </section>
+
+
+        <!-- RISK SUMMARY -->
+
+        <section class="section">
+
+            <h2>Churn Risk Overview</h2>
+
+            <div class="risk-cards">
+
+                <div class="risk-card high">
+                    <h3>High Risk</h3>
+                    <p id="highRisk">-</p>
+                </div>
+
+                <div class="risk-card medium">
+                    <h3>Medium Risk</h3>
+                    <p id="mediumRisk">-</p>
+                </div>
+
+                <div class="risk-card low">
+                    <h3>Low Risk</h3>
+                    <p id="lowRisk">-</p>
+                </div>
+
+                <div class="risk-card">
+                    <h3>Predictions Available</h3>
+                    <p id="predictionCount">-</p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- TOP RISK -->
+
+        <section class="section">
+
+            <h2>Top At-Risk Customers</h2>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Contract</th>
+                            <th>Tenure</th>
+                            <th>Monthly Charges</th>
+                            <th>Risk</th>
+                            <th>Probability</th>
+                            <th>Predicted LTV</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="riskTable">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- ALL CUSTOMERS -->
+
+        <section class="section">
+
+            <h2>Customer Data</h2>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Contract</th>
+                            <th>Tenure</th>
+                            <th>Monthly Charges</th>
+                            <th>Actual Churn</th>
+                            <th>Predicted Churn</th>
+                            <th>Probability</th>
+                            <th>LTV</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="customerTable">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <p id="errorMessage" class="error"></p>
+
+    </main>
+
+
+    <script src="dashboard.js"></script>
+
+</body>
+
+</html>
