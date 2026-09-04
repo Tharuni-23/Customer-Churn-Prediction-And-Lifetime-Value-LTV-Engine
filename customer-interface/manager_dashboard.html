@@ -1,51 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>
-        Manager Dashboard | Customer Churn & LTV
-    </title>
+    <title>Customer Analytics | Churn & LTV</title>
 
-    <link
-        rel="stylesheet"
-        href="manager_dashboard.css"
-    >
-
+    <link rel="stylesheet" href="manager_dashboard.css">
 </head>
-
 
 <body>
 
+<div class="layout">
+
     <!-- =====================================================
-         HEADER
-         ===================================================== -->
+         SIDEBAR
+    ====================================================== -->
 
-    <header class="header">
+    <aside class="sidebar">
 
-        <div>
+        <div class="brand">
 
-            <h1>
-                Customer Churn & LTV
-            </h1>
+            <div class="brand-mark">
+                CA
+            </div>
 
-            <p>
-                Manager Analytics Dashboard
-            </p>
+            <div class="brand-text">
+                <strong>Customer Analytics</strong>
+                <span>Churn & LTV</span>
+            </div>
 
         </div>
 
 
-        <div class="header-actions">
+        <nav class="sidebar-nav">
 
-            <span class="api-status">
+            <a href="#overview" class="nav-link active">
+                Overview
+            </a>
+
+            <a href="#risk-analysis" class="nav-link">
+                Risk & Value
+            </a>
+
+            <a href="#priority" class="nav-link">
+                Priority Cases
+            </a>
+
+            <a href="#customers" class="nav-link">
+                Customer Base
+            </a>
+
+            <a href="#customer-detail" class="nav-link">
+                Customer Detail
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <div class="connection-status">
 
                 <span
                     id="statusDot"
@@ -53,219 +71,283 @@
                 ></span>
 
                 <span id="apiStatus">
-                    Checking API...
+                    Checking API
                 </span>
 
-            </span>
+            </div>
 
-
-            <button
-                id="refreshButton"
-                class="refresh-button"
-            >
-                Refresh
-            </button>
+            <div class="tech-stack">
+                PostgreSQL · XGBoost · FastAPI
+            </div>
 
         </div>
 
-    </header>
+    </aside>
 
 
-    <main class="container">
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="main-content">
 
 
         <!-- =================================================
-             KPI CARDS
-             ================================================= -->
+             HEADER
+        ================================================== -->
 
-        <section>
+        <header class="top-header">
+
+            <div class="header-title">
+
+                <span class="eyebrow">
+                    MANAGER ANALYTICS
+                </span>
+
+                <h1>
+                    Customer Churn & Lifetime Value
+                </h1>
+
+                <p>
+                    Monitor customer risk, value and retention opportunities.
+                </p>
+
+            </div>
+
+
+            <div class="header-actions">
+
+                <span
+                    id="lastUpdated"
+                    class="last-updated"
+                >
+                    —
+                </span>
+
+                <button
+                    id="refreshButton"
+                    class="btn"
+                >
+                    Refresh
+                </button>
+
+                <button
+                    id="themeToggle"
+                    class="btn"
+                >
+                    Dark
+                </button>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =================================================
+             OVERVIEW
+        ================================================== -->
+
+        <section
+            id="overview"
+            class="dashboard-section"
+        >
 
             <div class="section-heading">
 
                 <div>
 
+                    <span class="eyebrow">
+                        PORTFOLIO SNAPSHOT
+                    </span>
+
                     <h2>
-                        Business Overview
+                        Business position
                     </h2>
 
-                    <p>
-                        Executive view of customer churn and lifetime value
-                    </p>
-
-                </div>
-
-                <div
-                    id="lastUpdated"
-                    class="last-updated"
-                >
-                    —
                 </div>
 
             </div>
 
+
+            <!-- KPI ROW -->
 
             <div class="kpi-grid">
 
+                <div class="kpi">
 
-                <div class="kpi-card">
-
-                    <span class="kpi-title">
-                        Total Customers
+                    <span>
+                        Customers
                     </span>
 
-                    <strong
-                        id="totalCustomers"
-                        class="kpi-value"
-                    >
+                    <strong id="totalCustomers">
                         —
                     </strong>
 
-                    <span class="kpi-subtext">
-                        Customer base
-                    </span>
+                    <small>
+                        Current customer base
+                    </small>
 
                 </div>
 
 
-                <div class="kpi-card">
+                <div class="kpi">
 
-                    <span class="kpi-title">
-                        Churn Customers
+                    <span>
+                        Churn rate
                     </span>
 
-                    <strong
-                        id="churnCustomers"
-                        class="kpi-value danger-text"
-                    >
+                    <strong id="churnRate">
                         —
                     </strong>
 
-                    <span class="kpi-subtext">
-                        Customers marked as churn
-                    </span>
+                    <small>
+                        Observed churn
+                    </small>
 
                 </div>
 
 
-                <div class="kpi-card">
+                <div class="kpi">
 
-                    <span class="kpi-title">
-                        Churn Rate
+                    <span>
+                        High-risk customers
                     </span>
 
-                    <strong
-                        id="churnRate"
-                        class="kpi-value"
-                    >
+                    <strong id="highRiskCustomers">
                         —
                     </strong>
 
-                    <span class="kpi-subtext">
-                        Overall churn percentage
-                    </span>
+                    <small>
+                        Probability ≥ 70%
+                    </small>
 
                 </div>
 
 
-                <div class="kpi-card">
+                <div class="kpi">
 
-                    <span class="kpi-title">
-                        High-Risk Customers
+                    <span>
+                        Total predicted LTV
                     </span>
 
-                    <strong
-                        id="highRiskCustomers"
-                        class="kpi-value warning-text"
-                    >
+                    <strong id="totalPredictedLtv">
                         —
                     </strong>
 
-                    <span class="kpi-subtext">
-                        Churn probability ≥ 70%
-                    </span>
+                    <small>
+                        Portfolio value
+                    </small>
 
                 </div>
 
 
-                <div class="kpi-card">
+                <div class="kpi">
 
-                    <span class="kpi-title">
-                        Average Predicted LTV
+                    <span>
+                        Average LTV
                     </span>
 
-                    <strong
-                        id="avgPredictedLtv"
-                        class="kpi-value"
-                    >
+                    <strong id="avgPredictedLtv">
                         —
                     </strong>
 
-                    <span class="kpi-subtext">
-                        Expected lifetime revenue
-                    </span>
+                    <small>
+                        Per customer
+                    </small>
 
                 </div>
 
 
-                <div class="kpi-card">
+                <div class="kpi">
 
-                    <span class="kpi-title">
-                        Total Predicted LTV
+                    <span>
+                        Avg monthly charge
                     </span>
 
-                    <strong
-                        id="totalPredictedLtv"
-                        class="kpi-value"
-                    >
+                    <strong id="avgMonthlyCharges">
                         —
                     </strong>
 
-                    <span class="kpi-subtext">
-                        Estimated customer value
+                    <small>
+                        Billing profile
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- MANAGER SIGNALS -->
+
+            <div class="signal-grid">
+
+                <div class="signal">
+
+                    <span>
+                        Highest observed churn segment
                     </span>
+
+                    <strong id="biggestRiskText">
+                        —
+                    </strong>
+
+                    <small id="biggestRiskDetail">
+                        —
+                    </small>
 
                 </div>
 
 
-                <div class="kpi-card">
+                <div class="signal">
 
-                    <span class="kpi-title">
-                        High-Risk + High-LTV
+                    <span>
+                        LTV exposed to high risk
                     </span>
 
-                    <strong
-                        id="priorityCustomersCount"
-                        class="kpi-value priority-text"
-                    >
+                    <strong id="revenueRiskText">
                         —
                     </strong>
 
-                    <span class="kpi-subtext">
-                        Retention priority
-                    </span>
+                    <small id="revenueRiskDetail">
+                        —
+                    </small>
 
                 </div>
 
 
-                <div class="kpi-card">
+                <div class="signal">
 
-                    <span class="kpi-title">
-                        Avg Monthly Charges
+                    <span>
+                        Service gap
                     </span>
 
-                    <strong
-                        id="avgMonthlyCharges"
-                        class="kpi-value"
-                    >
+                    <strong id="serviceGapText">
                         —
                     </strong>
 
-                    <span class="kpi-subtext">
-                        Across customers
-                    </span>
+                    <small id="serviceGapDetail">
+                        —
+                    </small>
 
                 </div>
 
+
+                <div class="signal priority-signal">
+
+                    <span>
+                        Immediate retention queue
+                    </span>
+
+                    <strong id="priorityText">
+                        —
+                    </strong>
+
+                    <small id="priorityDetail">
+                        High risk + high predicted LTV
+                    </small>
+
+                </div>
 
             </div>
 
@@ -274,729 +356,325 @@
 
 
         <!-- =================================================
-             CHART ROW 1
-             ================================================= -->
-
-        <section class="dashboard-grid">
-
-
-            <div class="dashboard-card large-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Churn vs Retained
-                        </h3>
-
-                        <p>
-                            Overall customer outcome
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="churnOutcomeChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-            <div class="dashboard-card large-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Global Churn Risk
-                        </h3>
-
-                        <p>
-                            Customers grouped by predicted risk
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="churnRiskChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-        </section>
-
-
-
-        <!-- =================================================
-             CHART ROW 2
-             ================================================= -->
-
-        <section class="dashboard-grid">
-
-
-            <div class="dashboard-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            LTV Segmentation
-                        </h3>
-
-                        <p>
-                            Customer distribution by predicted LTV
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="ltvSegmentChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-            <div class="dashboard-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Churn by Gender
-                        </h3>
-
-                        <p>
-                            Churn comparison by gender
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="genderChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-            <div class="dashboard-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Churn by Partner
-                        </h3>
-
-                        <p>
-                            Customer churn based on partner status
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="partnerChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-        </section>
-
-
-
-        <!-- =================================================
-             CHART ROW 3
-             ================================================= -->
-
-        <section class="dashboard-grid">
-
-
-            <div class="dashboard-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Churn by Contract
-                        </h3>
-
-                        <p>
-                            Contract type and churn volume
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="contractChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-            <div class="dashboard-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Churn by Internet Service
-                        </h3>
-
-                        <p>
-                            Service type and churn volume
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="internetChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-            <div class="dashboard-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Churn by Tenure
-                        </h3>
-
-                        <p>
-                            Customer tenure versus churn
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="tenureChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-        </section>
-
-
-
-        <!-- =================================================
-             CHART ROW 4
-             ================================================= -->
-
-        <section class="dashboard-grid">
-
-
-            <div class="dashboard-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Churn by Payment Method
-                        </h3>
-
-                        <p>
-                            Churn customers by payment method
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="paymentChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-            <div class="dashboard-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Churn by Total Services
-                        </h3>
-
-                        <p>
-                            Relationship between services and churn
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="chart-box">
-
-                    <canvas
-                        id="servicesChart"
-                    ></canvas>
-
-                </div>
-
-            </div>
-
-
-            <div class="dashboard-card">
-
-                <div class="card-heading">
-
-                    <div>
-
-                        <h3>
-                            Manager Insight
-                        </h3>
-
-                        <p>
-                            Retention focus
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="insight-box">
-
-                    <div class="insight-item">
-
-                        <span class="insight-label">
-                            High-risk threshold
-                        </span>
-
-                        <strong>
-                            ≥ 70%
-                        </strong>
-
-                    </div>
-
-
-                    <div class="insight-item">
-
-                        <span class="insight-label">
-                            High-LTV threshold
-                        </span>
-
-                        <strong>
-                            ≥ ₹5,000
-                        </strong>
-
-                    </div>
-
-
-                    <div class="insight-item">
-
-                        <span class="insight-label">
-                            Priority segment
-                        </span>
-
-                        <strong>
-                            High Churn + High LTV
-                        </strong>
-
-                    </div>
-
-
-                    <div class="insight-item">
-
-                        <span class="insight-label">
-                            Dashboard source
-                        </span>
-
-                        <strong>
-                            Neon PostgreSQL
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-        </section>
-
-
-
-        <!-- =================================================
-             CUSTOMER SEARCH
-             ================================================= -->
-
-        <section class="dashboard-card full-width">
-
-            <div class="card-heading">
-
-                <div>
-
-                    <h3>
-                        Customer Search
-                    </h3>
-
-                    <p>
-                        Search the live PostgreSQL customer record
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="search-box">
-
-                <input
-                    type="text"
-                    id="customerIdInput"
-                    placeholder="Enter Customer ID"
-                    autocomplete="off"
-                >
-
-
-                <button
-                    id="searchButton"
-                    class="primary-button"
-                >
-                    Search Customer
-                </button>
-
-            </div>
-
-
-            <div
-                id="searchMessage"
-                class="search-message"
-            ></div>
-
-        </section>
-
-
-
-        <!-- =================================================
-             CUSTOMER DETAILS
-             ================================================= -->
+             RISK & VALUE
+        ================================================== -->
 
         <section
-            id="customerDetailsSection"
-            class="dashboard-card full-width hidden"
+            id="risk-analysis"
+            class="dashboard-section"
         >
 
-            <div class="card-heading">
+            <div class="section-heading">
 
                 <div>
 
-                    <h3>
-                        Customer Details
-                    </h3>
+                    <span class="eyebrow">
+                        ANALYSIS
+                    </span>
 
-                    <p id="selectedCustomerId">
-                        —
-                    </p>
+                    <h2>
+                        Risk and value distribution
+                    </h2>
 
                 </div>
 
             </div>
 
 
-            <div class="customer-detail-grid">
+            <div class="chart-grid">
 
 
-                <div class="detail-card">
+                <!-- CHURN OUTCOME -->
 
-                    <h4>
-                        Customer Information
-                    </h4>
+                <article class="panel">
 
+                    <div class="panel-title">
 
-                    <div class="detail-row">
-                        <span>Customer ID</span>
-                        <strong id="detailCustomerId">—</strong>
+                        <div>
+
+                            <h3>
+                                Customer outcome
+                            </h3>
+
+                            <p>
+                                Retained vs churned customers
+                            </p>
+
+                        </div>
+
                     </div>
 
-
-                    <div class="detail-row">
-                        <span>Gender</span>
-                        <strong id="detailGender">—</strong>
+                    <div class="chart-container">
+                        <canvas id="churnOutcomeChart"></canvas>
                     </div>
 
+                </article>
 
-                    <div class="detail-row">
-                        <span>Senior Citizen</span>
-                        <strong id="detailSeniorCitizen">—</strong>
+
+
+                <!-- RISK DISTRIBUTION -->
+
+                <article class="panel">
+
+                    <div class="panel-title">
+
+                        <div>
+
+                            <h3>
+                                Predicted risk distribution
+                            </h3>
+
+                            <p>
+                                Customer count by risk band
+                            </p>
+
+                        </div>
+
                     </div>
 
-
-                    <div class="detail-row">
-                        <span>Partner</span>
-                        <strong id="detailPartner">—</strong>
+                    <div class="chart-container">
+                        <canvas id="churnRiskChart"></canvas>
                     </div>
 
+                </article>
 
-                    <div class="detail-row">
-                        <span>Dependents</span>
-                        <strong id="detailDependents">—</strong>
+
+
+                <!-- LTV SEGMENTS -->
+
+                <article class="panel">
+
+                    <div class="panel-title">
+
+                        <div>
+
+                            <h3>
+                                LTV segmentation
+                            </h3>
+
+                            <p>
+                                Customer count by predicted value
+                            </p>
+
+                        </div>
+
                     </div>
 
-
-                    <div class="detail-row">
-                        <span>Tenure</span>
-                        <strong id="detailTenure">—</strong>
+                    <div class="chart-container">
+                        <canvas id="ltvSegmentChart"></canvas>
                     </div>
 
-                </div>
+                </article>
 
 
 
-                <div class="detail-card">
+                <!-- RISK x LTV -->
 
-                    <h4>
-                        Services
-                    </h4>
+                <article class="panel">
 
+                    <div class="panel-title">
 
-                    <div class="detail-row">
-                        <span>Phone Service</span>
-                        <strong id="detailPhoneService">—</strong>
+                        <div>
+
+                            <h3>
+                                Risk × LTV
+                            </h3>
+
+                            <p>
+                                Identify valuable customers exposed to churn
+                            </p>
+
+                        </div>
+
                     </div>
 
-
-                    <div class="detail-row">
-                        <span>Multiple Lines</span>
-                        <strong id="detailMultipleLines">—</strong>
+                    <div class="chart-container">
+                        <canvas id="riskLtvChart"></canvas>
                     </div>
 
+                </article>
 
-                    <div class="detail-row">
-                        <span>Internet Service</span>
-                        <strong id="detailInternetService">—</strong>
+
+
+                <!-- MONTHLY CHARGES -->
+
+                <article class="panel">
+
+                    <div class="panel-title">
+
+                        <div>
+
+                            <h3>
+                                Monthly charge bands
+                            </h3>
+
+                            <p>
+                                Observed churn across billing levels
+                            </p>
+
+                        </div>
+
                     </div>
 
-
-                    <div class="detail-row">
-                        <span>Online Security</span>
-                        <strong id="detailOnlineSecurity">—</strong>
+                    <div class="chart-container">
+                        <canvas id="chargeBandChart"></canvas>
                     </div>
 
-
-                    <div class="detail-row">
-                        <span>Online Backup</span>
-                        <strong id="detailOnlineBackup">—</strong>
-                    </div>
-
-
-                    <div class="detail-row">
-                        <span>Device Protection</span>
-                        <strong id="detailDeviceProtection">—</strong>
-                    </div>
-
-
-                    <div class="detail-row">
-                        <span>Tech Support</span>
-                        <strong id="detailTechSupport">—</strong>
-                    </div>
-
-
-                    <div class="detail-row">
-                        <span>Streaming TV</span>
-                        <strong id="detailStreamingTV">—</strong>
-                    </div>
-
-
-                    <div class="detail-row">
-                        <span>Streaming Movies</span>
-                        <strong id="detailStreamingMovies">—</strong>
-                    </div>
-
-                </div>
+                </article>
 
 
 
-                <div class="detail-card">
+                <!-- REVENUE EXPOSURE -->
 
-                    <h4>
-                        Billing & Contract
-                    </h4>
+                <article class="panel">
 
+                    <div class="panel-title">
 
-                    <div class="detail-row">
-                        <span>Contract</span>
-                        <strong id="detailContract">—</strong>
-                    </div>
+                        <div>
 
+                            <h3>
+                                Revenue exposure
+                            </h3>
 
-                    <div class="detail-row">
-                        <span>Paperless Billing</span>
-                        <strong id="detailPaperlessBilling">—</strong>
-                    </div>
+                            <p>
+                                Predicted LTV grouped by risk
+                            </p>
 
-
-                    <div class="detail-row">
-                        <span>Payment Method</span>
-                        <strong id="detailPaymentMethod">—</strong>
-                    </div>
-
-
-                    <div class="detail-row">
-                        <span>Monthly Charges</span>
-                        <strong id="detailMonthlyCharges">—</strong>
-                    </div>
-
-
-                    <div class="detail-row">
-                        <span>Total Charges</span>
-                        <strong id="detailTotalCharges">—</strong>
-                    </div>
-
-
-                    <div class="detail-row">
-                        <span>Tenure Group</span>
-                        <strong id="detailTenureGroup">—</strong>
-                    </div>
-
-
-                    <div class="detail-row">
-                        <span>Total Services</span>
-                        <strong id="detailTotalServices">—</strong>
-                    </div>
-
-                </div>
-
-
-
-                <div class="detail-card prediction-detail">
-
-                    <h4>
-                        ML Prediction
-                    </h4>
-
-
-                    <div class="prediction-row">
-
-                        <span>
-                            Churn
-                        </span>
-
-                        <strong id="detailChurn">
-                            —
-                        </strong>
+                        </div>
 
                     </div>
 
 
-                    <div class="prediction-row">
+                    <div class="exposure">
 
-                        <span>
-                            Churn Probability
-                        </span>
+                        <div class="exposure-item">
 
-                        <strong id="detailChurnProbability">
-                            —
-                        </strong>
+                            <div>
+                                <span>High risk</span>
+
+                                <strong id="highRiskLtv">
+                                    —
+                                </strong>
+                            </div>
+
+                            <div class="exposure-track">
+                                <span id="highRiskBar"></span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="exposure-item">
+
+                            <div>
+                                <span>Medium risk</span>
+
+                                <strong id="mediumRiskLtv">
+                                    —
+                                </strong>
+                            </div>
+
+                            <div class="exposure-track">
+                                <span id="mediumRiskBar"></span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="exposure-item">
+
+                            <div>
+                                <span>Low risk</span>
+
+                                <strong id="lowRiskLtv">
+                                    —
+                                </strong>
+                            </div>
+
+                            <div class="exposure-track">
+                                <span id="lowRiskBar"></span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="exposure-total">
+
+                            <span>
+                                Total predicted LTV
+                            </span>
+
+                            <strong id="revenueTotalLtv">
+                                —
+                            </strong>
+
+                        </div>
 
                     </div>
 
+                </article>
 
-                    <div class="prediction-row">
+            </div>
 
-                        <span>
-                            Predicted LTV
-                        </span>
 
-                        <strong id="detailPredictedLtv">
-                            —
-                        </strong>
 
+            <!-- SEGMENT ANALYSIS -->
+
+            <div class="segment-grid">
+
+
+                <article class="panel">
+                    <h3>Contract</h3>
+                    <p>Observed churn rate</p>
+                    <div class="small-chart">
+                        <canvas id="contractChart"></canvas>
                     </div>
+                </article>
 
 
-                    <div class="prediction-row">
-
-                        <span>
-                            Prediction Time
-                        </span>
-
-                        <strong id="detailPredictionAt">
-                            —
-                        </strong>
-
+                <article class="panel">
+                    <h3>Tenure</h3>
+                    <p>Observed churn rate</p>
+                    <div class="small-chart">
+                        <canvas id="tenureChart"></canvas>
                     </div>
+                </article>
 
-                </div>
 
+                <article class="panel">
+                    <h3>Internet service</h3>
+                    <p>Observed churn rate</p>
+                    <div class="small-chart">
+                        <canvas id="internetChart"></canvas>
+                    </div>
+                </article>
+
+
+                <article class="panel">
+                    <h3>Payment method</h3>
+                    <p>Observed churn rate</p>
+                    <div class="small-chart">
+                        <canvas id="paymentChart"></canvas>
+                    </div>
+                </article>
+
+
+                <article class="panel">
+                    <h3>Number of services</h3>
+                    <p>Observed churn rate</p>
+                    <div class="small-chart">
+                        <canvas id="servicesChart"></canvas>
+                    </div>
+                </article>
+
+
+                <article class="panel">
+                    <h3>Gender</h3>
+                    <p>Observed churn rate</p>
+                    <div class="small-chart">
+                        <canvas id="genderChart"></canvas>
+                    </div>
+                </article>
 
             </div>
 
@@ -1006,94 +684,46 @@
 
         <!-- =================================================
              PRIORITY CUSTOMERS
-             ================================================= -->
+        ================================================== -->
 
-        <section class="dashboard-card full-width">
+        <section
+            id="priority"
+            class="dashboard-section"
+        >
 
-            <div class="card-heading">
+            <div class="section-heading">
 
                 <div>
 
-                    <h3>
-                        Retention Priority Customers
-                    </h3>
+                    <span class="eyebrow">
+                        RETENTION
+                    </span>
 
-                    <p>
-                        High churn probability and high predicted LTV
-                    </p>
+                    <h2>
+                        Priority customers
+                    </h2>
 
                 </div>
 
-            </div>
-
-
-            <div class="priority-rule">
-
-                Churn probability ≥ 70%
-                &nbsp;&nbsp;•&nbsp;&nbsp;
-                Predicted LTV ≥ ₹5,000
+                <span class="section-note">
+                    High predicted risk + high predicted LTV
+                </span>
 
             </div>
 
 
-            <div class="table-wrapper">
+            <div
+                id="priorityCards"
+                class="priority-grid"
+            >
 
-                <table>
+                <div class="panel">
+                    Loading...
+                </div>
 
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Customer ID
-                            </th>
-
-                            <th>
-                                Churn Probability
-                            </th>
-
-                            <th>
-                                Predicted LTV
-                            </th>
-
-                            <th>
-                                Contract
-                            </th>
-
-                            <th>
-                                Tenure
-                            </th>
-
-                            <th>
-                                Monthly Charges
-                            </th>
-
-                            <th>
-                                Prediction Time
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody id="priorityTableBody">
-
-                        <tr>
-
-                            <td
-                                colspan="7"
-                                class="loading"
-                            >
-                                Loading...
-
-                            </td>
-
-                        </tr>
-
-                    </tbody>
-
-                </table>
+                <div class="panel">
+                    Loading...
+                </div>
 
             </div>
 
@@ -1102,105 +732,502 @@
 
 
         <!-- =================================================
-             RECENT PREDICTIONS
-             ================================================= -->
+             CUSTOMER BASE
+        ================================================== -->
 
-        <section class="dashboard-card full-width">
+        <section
+            id="customers"
+            class="dashboard-section"
+        >
 
-            <div class="card-heading">
+            <div class="section-heading">
 
                 <div>
 
-                    <h3>
-                        Recent Customer Predictions
-                    </h3>
+                    <span class="eyebrow">
+                        DATA EXPLORER
+                    </span>
 
-                    <p>
-                        Latest predicted customer records
-                    </p>
+                    <h2>
+                        Customer base
+                    </h2>
 
                 </div>
+
+                <span
+                    id="customerCountLabel"
+                    class="section-note"
+                >
+                    Loading...
+                </span>
 
             </div>
 
 
-            <div class="table-wrapper">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Customer ID
-                            </th>
-
-                            <th>
-                                Churn
-                            </th>
-
-                            <th>
-                                Churn Probability
-                            </th>
-
-                            <th>
-                                Predicted LTV
-                            </th>
-
-                            <th>
-                                Prediction Time
-                            </th>
-
-                        </tr>
-
-                    </thead>
+            <div class="panel customer-panel">
 
 
-                    <tbody id="customerTableBody">
+                <div class="table-toolbar">
 
-                        <tr>
+                    <div class="search-box">
 
-                            <td
-                                colspan="5"
-                                class="loading"
+                        <input
+                            id="customerSearchInput"
+                            type="text"
+                            placeholder="Search customer ID, contract, payment..."
+                        >
+
+                        <button
+                            id="searchTableButton"
+                            class="btn primary"
+                        >
+                            Search
+                        </button>
+
+                    </div>
+
+
+                    <div class="filters">
+
+                        <select id="riskFilter">
+
+                            <option value="all">
+                                All risk
+                            </option>
+
+                            <option value="high">
+                                High risk
+                            </option>
+
+                            <option value="medium">
+                                Medium risk
+                            </option>
+
+                            <option value="low">
+                                Low risk
+                            </option>
+
+                        </select>
+
+
+                        <select id="pageSize">
+
+                            <option value="25">
+                                25 rows
+                            </option>
+
+                            <option
+                                value="50"
+                                selected
                             >
-                                Loading...
+                                50 rows
+                            </option>
 
-                            </td>
+                            <option value="100">
+                                100 rows
+                            </option>
 
-                        </tr>
+                        </select>
 
-                    </tbody>
+                    </div>
 
-                </table>
+                </div>
+
+
+                <div class="table-wrapper">
+
+                    <table class="customer-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Customer ID
+                                </th>
+
+                                <th>
+                                    Churn risk
+                                </th>
+
+                                <th>
+                                    Predicted LTV
+                                </th>
+
+                                <th>
+                                    Contract
+                                </th>
+
+                                <th>
+                                    Tenure
+                                </th>
+
+                                <th>
+                                    Monthly charge
+                                </th>
+
+                                <th>
+                                    Internet
+                                </th>
+
+                                <th>
+                                    Churn
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="customerTableBody">
+
+                            <tr>
+
+                                <td
+                                    colspan="8"
+                                    class="empty-cell"
+                                >
+                                    Loading customer records...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <div class="table-footer">
+
+                    <span id="pageInfo">
+                        —
+                    </span>
+
+                    <div>
+
+                        <button
+                            id="prevPage"
+                            class="btn"
+                        >
+                            Previous
+                        </button>
+
+                        <button
+                            id="nextPage"
+                            class="btn"
+                        >
+                            Next
+                        </button>
+
+                    </div>
+
+                </div>
 
             </div>
 
         </section>
 
 
+
+        <!-- =================================================
+             CUSTOMER DETAIL
+        ================================================== -->
+
+        <section
+            id="customer-detail"
+            class="dashboard-section"
+        >
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span class="eyebrow">
+                        INVESTIGATION
+                    </span>
+
+                    <h2 id="selectedCustomerTitle">
+                        Customer detail
+                    </h2>
+
+                </div>
+
+                <span
+                    id="searchMessage"
+                    class="section-note"
+                >
+                    Select a customer from the table.
+                </span>
+
+            </div>
+
+
+            <div class="detail-grid">
+
+
+                <!-- MODEL OUTPUT -->
+
+                <article class="panel model-panel">
+
+                    <div class="detail-header">
+
+                        <div>
+
+                            <span class="eyebrow">
+                                MODEL OUTPUT
+                            </span>
+
+                            <h3 id="detailCustomerId">
+                                —
+                            </h3>
+
+                        </div>
+
+
+                        <span
+                            id="detailChurnBadge"
+                            class="risk-badge"
+                        >
+                            —
+                        </span>
+
+                    </div>
+
+
+                    <div class="model-metrics">
+
+                        <div>
+
+                            <span>
+                                Churn probability
+                            </span>
+
+                            <strong id="detailChurnProbability">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Predicted LTV
+                            </span>
+
+                            <strong id="detailPredictedLtv">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                Prediction time
+                            </span>
+
+                            <strong id="detailPredictionAt">
+                                —
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="risk-driver-section">
+
+                        <span class="eyebrow">
+                            OBSERVED RISK INDICATORS
+                        </span>
+
+                        <div
+                            id="riskDrivers"
+                            class="risk-chips"
+                        >
+
+                            <span class="muted">
+                                Select a customer.
+                            </span>
+
+                        </div>
+
+                        <small>
+                            These indicators describe the customer's profile.
+                            They are not presented as causal explanations.
+                            Formal SHAP explanations should be connected here
+                            when available.
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+
+                <!-- CUSTOMER PROFILE -->
+
+                <article class="panel">
+
+                    <span class="eyebrow">
+                        CUSTOMER PROFILE
+                    </span>
+
+
+                    <div class="detail-list">
+
+                        <div>
+                            <span>Gender</span>
+                            <strong id="detailGender">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Senior citizen</span>
+                            <strong id="detailSeniorCitizen">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Partner</span>
+                            <strong id="detailPartner">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Dependents</span>
+                            <strong id="detailDependents">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Tenure</span>
+                            <strong id="detailTenure">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Tenure group</span>
+                            <strong id="detailTenureGroup">—</strong>
+                        </div>
+
+                    </div>
+
+
+                    <span class="eyebrow detail-label">
+                        SERVICES
+                    </span>
+
+
+                    <div class="service-grid">
+
+                        <span>
+                            Phone
+                            <b id="detailPhoneService">—</b>
+                        </span>
+
+                        <span>
+                            Lines
+                            <b id="detailMultipleLines">—</b>
+                        </span>
+
+                        <span>
+                            Internet
+                            <b id="detailInternetService">—</b>
+                        </span>
+
+                        <span>
+                            Security
+                            <b id="detailOnlineSecurity">—</b>
+                        </span>
+
+                        <span>
+                            Backup
+                            <b id="detailOnlineBackup">—</b>
+                        </span>
+
+                        <span>
+                            Protection
+                            <b id="detailDeviceProtection">—</b>
+                        </span>
+
+                        <span>
+                            Support
+                            <b id="detailTechSupport">—</b>
+                        </span>
+
+                        <span>
+                            TV
+                            <b id="detailStreamingTV">—</b>
+                        </span>
+
+                        <span>
+                            Movies
+                            <b id="detailStreamingMovies">—</b>
+                        </span>
+
+                        <span>
+                            Total services
+                            <b id="detailTotalServices">—</b>
+                        </span>
+
+                    </div>
+
+
+                    <span class="eyebrow detail-label">
+                        BILLING
+                    </span>
+
+
+                    <div class="detail-list">
+
+                        <div>
+                            <span>Contract</span>
+                            <strong id="detailContract">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Payment method</span>
+                            <strong id="detailPaymentMethod">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Paperless billing</span>
+                            <strong id="detailPaperlessBilling">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Monthly charges</span>
+                            <strong id="detailMonthlyCharges">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Total charges</span>
+                            <strong id="detailTotalCharges">—</strong>
+                        </div>
+
+                        <div>
+                            <span>Actual churn</span>
+                            <strong id="detailChurn">—</strong>
+                        </div>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
     </main>
 
+</div>
 
 
-    <!-- =====================================================
-         CHART.JS
-         ===================================================== -->
+<!-- Chart.js -->
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/chart.js"
-    ></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
-    <!-- =====================================================
-         MANAGER DASHBOARD JS
-         ===================================================== -->
-
-    <script
-        src="manager_dashboard.js"
-    ></script>
+<script src="manager_dashboard.js"></script>
 
 </body>
-
 </html>

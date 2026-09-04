@@ -1,49 +1,58 @@
-// =========================================================
-// CONFIGURATION
-// =========================================================
-
 const API_BASE_URL = "http://127.0.0.1:8000";
-
-
-// =========================================================
-// CHART INSTANCES
-// =========================================================
 
 const charts = {};
 
+let allCustomers = [];
+let filteredCustomers = [];
 
-// =========================================================
-// FORMATTING HELPERS
-// =========================================================
+let currentPage = 1;
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const $ = (id) =>
+    document.getElementById(id);
+
 
 function numberFormat(value) {
-    return Number(value || 0).toLocaleString("en-IN");
+
+    return Number(value ?? 0)
+        .toLocaleString("en-IN");
 }
 
 
 function currencyFormat(value) {
-    return "₹" + Number(value || 0).toLocaleString(
-        "en-IN",
-        {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }
-    );
+
+    return "₹" +
+        Number(value ?? 0)
+            .toLocaleString(
+                "en-IN",
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            );
 }
 
 
 function percentFormat(value) {
-    return (Number(value || 0) * 100).toFixed(2) + "%";
+
+    return (
+        Number(value ?? 0) * 100
+    ).toFixed(2) + "%";
 }
 
 
-function valueOrNA(value) {
+function safe(value) {
+
     if (
         value === null ||
         value === undefined ||
         value === ""
     ) {
-        return "N/A";
+        return "—";
     }
 
     return String(value);
@@ -53,44 +62,62 @@ function valueOrNA(value) {
 function dateFormat(value) {
 
     if (!value) {
-        return "N/A";
+        return "—";
     }
 
-    const date = new Date(value);
+    const date =
+        new Date(value);
 
-    if (Number.isNaN(date.getTime())) {
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
         return String(value);
     }
 
-    return date.toLocaleString("en-IN");
+    return date.toLocaleString(
+        "en-IN"
+    );
 }
 
 
-// =========================================================
-// API HELPER
-// =========================================================
+function themeValue(variable) {
+
+    return getComputedStyle(
+        document.documentElement
+    )
+        .getPropertyValue(variable)
+        .trim();
+}
+
+
+/* =========================================================
+   API
+========================================================= */
 
 async function getJSON(endpoint) {
 
-    const response = await fetch(
-        `${API_BASE_URL}${endpoint}`
-    );
+    const response =
+        await fetch(
+            API_BASE_URL + endpoint
+        );
 
     if (!response.ok) {
 
         let message =
-            `Request failed: ${response.status}`;
+            `Request failed (${response.status})`;
 
         try {
 
-            const errorData = await response.json();
+            const data =
+                await response.json();
 
-            if (errorData.detail) {
-                message = errorData.detail;
-            }
+            message =
+                data.detail ||
+                message;
 
         } catch (_) {
-            // Response may not contain JSON.
         }
 
         throw new Error(message);
@@ -100,130 +127,38 @@ async function getJSON(endpoint) {
 }
 
 
-// =========================================================
-// API HEALTH
-// =========================================================
+/* =========================================================
+   API STATUS
+========================================================= */
 
 async function checkAPI() {
-
-    const statusText =
-        document.getElementById("apiStatus");
-
-    const statusDot =
-        document.getElementById("statusDot");
 
     try {
 
         await getJSON("/");
 
-        statusText.textContent =
-            "API Connected";
+        $("apiStatus").textContent =
+            "API connected";
 
-        statusDot.className =
+        $("statusDot").className =
             "status-dot online";
 
     } catch (error) {
 
-        console.error(
-            "API health check failed:",
-            error
-        );
+        console.error(error);
 
-        statusText.textContent =
-            "API Disconnected";
+        $("apiStatus").textContent =
+            "API unavailable";
 
-        statusDot.className =
+        $("statusDot").className =
             "status-dot offline";
     }
 }
 
 
-// =========================================================
-// SUMMARY / KPI CARDS
-// =========================================================
-
-async function loadSummary() {
-
-    const data =
-        await getJSON(
-            "/dashboard/summary"
-        );
-
-
-    document.getElementById(
-        "totalCustomers"
-    ).textContent =
-        numberFormat(
-            data.total_customers
-        );
-
-
-    document.getElementById(
-        "churnCustomers"
-    ).textContent =
-        numberFormat(
-            data.churn_customers
-        );
-
-
-    document.getElementById(
-        "churnRate"
-    ).textContent =
-        percentFormat(
-            data.churn_rate
-        );
-
-
-    document.getElementById(
-        "highRiskCustomers"
-    ).textContent =
-        numberFormat(
-            data.high_risk_customers
-        );
-
-
-    document.getElementById(
-        "avgPredictedLtv"
-    ).textContent =
-        currencyFormat(
-            data.avg_predicted_ltv
-        );
-
-
-    document.getElementById(
-        "totalPredictedLtv"
-    ).textContent =
-        currencyFormat(
-            data.total_predicted_ltv
-        );
-
-
-    document.getElementById(
-        "priorityCustomersCount"
-    ).textContent =
-        numberFormat(
-            data.high_risk_high_ltv_customers
-        );
-
-
-    document.getElementById(
-        "avgMonthlyCharges"
-    ).textContent =
-        currencyFormat(
-            data.avg_monthly_charges
-        );
-
-
-    document.getElementById(
-        "lastUpdated"
-    ).textContent =
-        `Updated: ${new Date().toLocaleString("en-IN")}`;
-}
-
-
-// =========================================================
-// CHART DESTROY HELPER
-// =========================================================
+/* =========================================================
+   CHART MANAGEMENT
+========================================================= */
 
 function destroyChart(name) {
 
@@ -236,11 +171,166 @@ function destroyChart(name) {
 }
 
 
-// =========================================================
-// CHURN VS RETAINED
-// =========================================================
+function createBarChart(
+    canvasId,
+    labels,
+    values,
+    name,
+    showPercent = true
+) {
 
-async function loadChurnOutcomeChart() {
+    const canvas =
+        $(canvasId);
+
+    if (!canvas) {
+        return;
+    }
+
+    destroyChart(name);
+
+
+    charts[name] =
+        new Chart(
+            canvas,
+            {
+
+                type: "bar",
+
+                data: {
+
+                    labels,
+
+                    datasets: [
+
+                        {
+                            data: values,
+
+                            backgroundColor:
+                                themeValue(
+                                    "--accent"
+                                ),
+
+                            borderWidth:
+                                0,
+
+                            maxBarThickness:
+                                34
+                        }
+
+                    ]
+                },
+
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    plugins: {
+
+                        legend: {
+                            display:
+                                false
+                        },
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label:
+                                    function (
+                                        context
+                                    ) {
+
+                                        return showPercent
+                                            ? percentFormat(
+                                                context.raw
+                                            )
+                                            : numberFormat(
+                                                context.raw
+                                            );
+                                    }
+                            }
+                        }
+                    },
+
+
+                    scales: {
+
+                        x: {
+
+                            grid: {
+                                display:
+                                    false
+                            },
+
+                            ticks: {
+
+                                color:
+                                    themeValue(
+                                        "--muted"
+                                    ),
+
+                                maxRotation:
+                                    30
+                            }
+                        },
+
+
+                        y: {
+
+                            beginAtZero:
+                                true,
+
+                            suggestedMax:
+                                showPercent
+                                    ? 1
+                                    : undefined,
+
+                            grid: {
+
+                                color:
+                                    themeValue(
+                                        "--line"
+                                    )
+                            },
+
+                            ticks: {
+
+                                color:
+                                    themeValue(
+                                        "--muted"
+                                    ),
+
+                                callback:
+                                    function (
+                                        value
+                                    ) {
+
+                                        return showPercent
+                                            ? Math.round(
+                                                value * 100
+                                            ) + "%"
+                                            : numberFormat(
+                                                value
+                                            );
+                                    }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+async function loadSummary() {
 
     const data =
         await getJSON(
@@ -248,14 +338,236 @@ async function loadChurnOutcomeChart() {
         );
 
 
-    destroyChart("churnOutcome");
+    $("totalCustomers").textContent =
+        numberFormat(
+            data.total_customers
+        );
 
 
-    charts.churnOutcome =
+    $("churnRate").textContent =
+        percentFormat(
+            data.churn_rate
+        );
+
+
+    $("highRiskCustomers").textContent =
+        numberFormat(
+            data.high_risk_customers
+        );
+
+
+    $("totalPredictedLtv").textContent =
+        currencyFormat(
+            data.total_predicted_ltv
+        );
+
+
+    $("avgPredictedLtv").textContent =
+        currencyFormat(
+            data.avg_predicted_ltv
+        );
+
+
+    $("avgMonthlyCharges").textContent =
+        currencyFormat(
+            data.avg_monthly_charges
+        );
+
+
+    $("lastUpdated").textContent =
+        "Updated " +
+        new Date().toLocaleString(
+            "en-IN"
+        );
+
+
+    return data;
+}
+
+
+/* =========================================================
+   EXECUTIVE INSIGHTS
+========================================================= */
+
+async function loadExecutiveInsights() {
+
+    const data =
+        await getJSON(
+            "/dashboard/executive-insights"
+        );
+
+
+    const headline =
+        data.headline || {};
+
+    const contract =
+        data.largest_contract_risk || {};
+
+    const service =
+        data.service_gap || {};
+
+
+    $("biggestRiskText").textContent =
+        safe(
+            contract.segment
+        );
+
+
+    $("biggestRiskDetail").textContent =
+
+        contract.churn_rate != null
+            ? `${percentFormat(
+                contract.churn_rate
+            )} observed churn within this segment`
+            : "No segment signal available";
+
+
+    $("revenueRiskText").textContent =
+        currencyFormat(
+            headline.high_risk_ltv
+        );
+
+
+    $("revenueRiskDetail").textContent =
+
+        `${numberFormat(
+            headline.high_risk_customers
+        )} customers above 70% risk`;
+
+
+    $("serviceGapText").textContent =
+        safe(
+            service.service
+        );
+
+
+    $("serviceGapDetail").textContent =
+
+        service.churn_rate_without_service != null
+            ? `${percentFormat(
+                service.churn_rate_without_service
+            )} observed churn without this service`
+            : "No service signal available";
+
+
+    $("priorityText").textContent =
+        numberFormat(
+            headline.priority_customers
+        );
+
+
+    $("priorityDetail").textContent =
+        "High risk + high predicted LTV";
+}
+
+
+/* =========================================================
+   REVENUE EXPOSURE
+========================================================= */
+
+async function loadRevenueRisk() {
+
+    const data =
+        await getJSON(
+            "/dashboard/revenue-at-risk"
+        );
+
+
+    const high =
+        Number(
+            data.high_risk_ltv || 0
+        );
+
+    const medium =
+        Number(
+            data.medium_risk_ltv || 0
+        );
+
+    const low =
+        Number(
+            data.low_risk_ltv || 0
+        );
+
+    const total =
+        Number(
+            data.total_ltv ||
+            high +
+            medium +
+            low
+        );
+
+
+    $("highRiskLtv").textContent =
+        currencyFormat(high);
+
+    $("mediumRiskLtv").textContent =
+        currencyFormat(medium);
+
+    $("lowRiskLtv").textContent =
+        currencyFormat(low);
+
+    $("revenueTotalLtv").textContent =
+        currencyFormat(total);
+
+
+    $("highRiskBar").style.width =
+        total
+            ? `${high / total * 100}%`
+            : "0%";
+
+
+    $("mediumRiskBar").style.width =
+        total
+            ? `${medium / total * 100}%`
+            : "0%";
+
+
+    $("lowRiskBar").style.width =
+        total
+            ? `${low / total * 100}%`
+            : "0%";
+}
+
+
+/* =========================================================
+   CHURN OUTCOME
+========================================================= */
+
+function renderOutcomeChart(
+    summaryData
+) {
+
+    const canvas =
+        $("churnOutcomeChart");
+
+    if (!canvas) {
+        return;
+    }
+
+
+    destroyChart("outcome");
+
+
+    const churn =
+        Number(
+            summaryData.churn_customers ||
+            0
+        );
+
+
+    const retained =
+        Number(
+            summaryData.retained_customers ??
+            (
+                summaryData.total_customers -
+                churn
+            )
+        );
+
+
+    charts.outcome =
         new Chart(
-            document.getElementById(
-                "churnOutcomeChart"
-            ),
+            canvas,
             {
 
                 type: "doughnut",
@@ -271,41 +583,51 @@ async function loadChurnOutcomeChart() {
 
                         {
                             data: [
-                                data.retained_customers,
-                                data.churn_customers
+                                retained,
+                                churn
                             ],
 
-                            borderWidth: 2
+                            backgroundColor: [
+                                themeValue(
+                                    "--success"
+                                ),
+
+                                themeValue(
+                                    "--danger"
+                                )
+                            ],
+
+                            borderWidth:
+                                0
                         }
+
                     ]
                 },
+
 
                 options: {
 
                     responsive: true,
 
-                    maintainAspectRatio: false,
+                    maintainAspectRatio:
+                        false,
+
+                    cutout:
+                        "70%",
 
                     plugins: {
 
                         legend: {
 
-                            position: "bottom"
-                        },
+                            position:
+                                "bottom",
 
-                        tooltip: {
+                            labels: {
 
-                            callbacks: {
-
-                                label: function(context) {
-
-                                    return (
-                                        `${context.label}: ` +
-                                        numberFormat(
-                                            context.raw
-                                        )
-                                    );
-                                }
+                                color:
+                                    themeValue(
+                                        "--text"
+                                    )
                             }
                         }
                     }
@@ -315,1113 +637,1424 @@ async function loadChurnOutcomeChart() {
 }
 
 
-// =========================================================
-// GLOBAL CHURN RISK
-// =========================================================
+/* =========================================================
+   RISK DISTRIBUTION
+========================================================= */
 
-async function loadChurnRiskChart() {
+async function loadRiskChart() {
 
-    const result =
+    const data =
         await getJSON(
             "/dashboard/churn-risk"
         );
 
 
-    const labels =
-        result.risk_distribution.map(
-            item => item.risk_level
-        );
+    const rows =
+        data.risk_distribution ||
+        [];
 
 
-    const values =
-        result.risk_distribution.map(
-            item => Number(
-                item.customer_count || 0
-            )
-        );
+    createBarChart(
+        "churnRiskChart",
 
+        rows.map(
+            item =>
+                item.risk_level
+        ),
 
-    destroyChart("churnRisk");
+        rows.map(
+            item =>
+                Number(
+                    item.customer_count ||
+                    0
+                )
+        ),
 
+        "risk",
 
-    charts.churnRisk =
-        new Chart(
-            document.getElementById(
-                "churnRiskChart"
-            ),
-            {
-
-                type: "doughnut",
-
-                data: {
-
-                    labels: labels,
-
-                    datasets: [
-
-                        {
-                            data: values,
-
-                            borderWidth: 2
-                        }
-                    ]
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    plugins: {
-
-                        legend: {
-
-                            position: "bottom"
-                        },
-
-                        tooltip: {
-
-                            callbacks: {
-
-                                label: function(context) {
-
-                                    return (
-                                        `${context.label}: ` +
-                                        numberFormat(
-                                            context.raw
-                                        )
-                                    );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        );
+        false
+    );
 }
 
 
-// =========================================================
-// LTV SEGMENTATION
-// =========================================================
+/* =========================================================
+   LTV
+========================================================= */
 
 async function loadLtvChart() {
 
-    const result =
+    const data =
         await getJSON(
             "/dashboard/ltv-segments"
         );
 
 
-    const labels =
-        result.ltv_segments.map(
-            item => item.ltv_segment
-        );
+    const rows =
+        data.ltv_segments ||
+        [];
 
 
-    const values =
-        result.ltv_segments.map(
-            item => Number(
-                item.customer_count || 0
-            )
-        );
+    createBarChart(
+        "ltvSegmentChart",
 
+        rows.map(
+            item =>
+                item.ltv_segment
+        ),
 
-    destroyChart("ltv");
+        rows.map(
+            item =>
+                Number(
+                    item.customer_count ||
+                    0
+                )
+        ),
 
+        "ltv",
 
-    charts.ltv =
-        new Chart(
-            document.getElementById(
-                "ltvSegmentChart"
-            ),
-            {
-
-                type: "bar",
-
-                data: {
-
-                    labels: labels,
-
-                    datasets: [
-
-                        {
-                            label:
-                                "Customers",
-
-                            data: values,
-
-                            borderWidth: 1
-                        }
-                    ]
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            ticks: {
-
-                                precision: 0
-                            }
-                        }
-                    },
-
-                    plugins: {
-
-                        legend: {
-
-                            display: false
-                        },
-
-                        tooltip: {
-
-                            callbacks: {
-
-                                label: function(context) {
-
-                                    return (
-                                        ` Customers: ` +
-                                        numberFormat(
-                                            context.raw
-                                        )
-                                    );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        );
+        false
+    );
 }
 
 
-// =========================================================
-// GENERIC CATEGORY CHART
-// =========================================================
+/* =========================================================
+   SEGMENT CHARTS
+========================================================= */
 
-async function loadCategoryChart(
+async function loadSegmentChart(
     endpoint,
     canvasId,
     chartName,
-    fieldName
+    field
 ) {
 
-    const result =
-        await getJSON(endpoint);
-
-
-    const labels =
-        result.data.map(
-            item =>
-                valueOrNA(
-                    item[fieldName]
-                )
+    const data =
+        await getJSON(
+            endpoint
         );
 
 
-    const values =
-        result.data.map(
+    const rows =
+        data.data ||
+        [];
+
+
+    createBarChart(
+        canvasId,
+
+        rows.map(
+            item =>
+                safe(
+                    item[field]
+                )
+        ),
+
+        rows.map(
             item =>
                 Number(
-                    item.churn_customers || 0
+                    item.churn_rate ||
+                    0
                 )
+        ),
+
+        chartName,
+
+        true
+    );
+}
+
+
+/* =========================================================
+   RISK x LTV
+========================================================= */
+
+async function loadRiskLtvChart() {
+
+    try {
+
+        const data =
+            await getJSON(
+                "/dashboard/risk-ltv-matrix"
+            );
+
+
+        const rows =
+            data.customers ||
+            data.data ||
+            [];
+
+
+        if (
+            rows.length === 0
+        ) {
+            return;
+        }
+
+
+        const canvas =
+            $("riskLtvChart");
+
+
+        if (!canvas) {
+            return;
+        }
+
+
+        destroyChart(
+            "riskLtv"
         );
 
 
-    destroyChart(chartName);
+        charts.riskLtv =
+            new Chart(
+                canvas,
+                {
 
+                    type: "scatter",
 
-    charts[chartName] =
-        new Chart(
-            document.getElementById(
-                canvasId
-            ),
-            {
+                    data: {
 
-                type: "bar",
+                        datasets: [
 
-                data: {
+                            {
+                                data:
 
-                    labels: labels,
+                                    rows.map(
+                                        item => ({
 
-                    datasets: [
+                                            x:
+                                                Number(
+                                                    item.churn_probability ||
+                                                    0
+                                                ) * 100,
 
-                        {
-                            label:
-                                "Churn Customers",
+                                            y:
+                                                Number(
+                                                    item.predicted_ltv ||
+                                                    0
+                                                )
+                                        })
+                                    ),
 
-                            data: values,
+                                backgroundColor:
+                                    themeValue(
+                                        "--accent"
+                                    ),
 
-                            borderWidth: 1
-                        }
-                    ]
-                },
+                                pointRadius:
+                                    3,
 
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            ticks: {
-
-                                precision: 0
+                                pointHoverRadius:
+                                    5
                             }
-                        }
+
+                        ]
                     },
 
-                    plugins: {
 
-                        legend: {
+                    options: {
 
-                            display: false
+                        responsive: true,
+
+                        maintainAspectRatio:
+                            false,
+
+                        plugins: {
+
+                            legend: {
+                                display:
+                                    false
+                            },
+
+                            tooltip: {
+
+                                callbacks: {
+
+                                    label:
+                                        function (
+                                            context
+                                        ) {
+
+                                            return (
+                                                "Risk " +
+                                                Number(
+                                                    context.parsed.x
+                                                ).toFixed(1) +
+                                                "% · LTV " +
+                                                currencyFormat(
+                                                    context.parsed.y
+                                                )
+                                            );
+                                        }
+                                }
+                            }
                         },
 
-                        tooltip: {
 
-                            callbacks: {
+                        scales: {
 
-                                label: function(context) {
+                            x: {
 
-                                    return (
-                                        ` Churn: ` +
-                                        numberFormat(
-                                            context.raw
+                                title: {
+
+                                    display:
+                                        true,
+
+                                    text:
+                                        "Churn probability (%)",
+
+                                    color:
+                                        themeValue(
+                                            "--muted"
                                         )
-                                    );
+                                },
+
+                                grid: {
+
+                                    color:
+                                        themeValue(
+                                            "--line"
+                                        )
+                                },
+
+                                ticks: {
+
+                                    color:
+                                        themeValue(
+                                            "--muted"
+                                        )
+                                }
+                            },
+
+
+                            y: {
+
+                                title: {
+
+                                    display:
+                                        true,
+
+                                    text:
+                                        "Predicted LTV",
+
+                                    color:
+                                        themeValue(
+                                            "--muted"
+                                        )
+                                },
+
+                                grid: {
+
+                                    color:
+                                        themeValue(
+                                            "--line"
+                                        )
+                                },
+
+                                ticks: {
+
+                                    color:
+                                        themeValue(
+                                            "--muted"
+                                        )
                                 }
                             }
                         }
                     }
                 }
-            }
+            );
+
+    } catch (error) {
+
+        console.warn(
+            "Risk × LTV endpoint unavailable:",
+            error.message
         );
+    }
 }
 
 
-// =========================================================
-// CATEGORY CHARTS
-// =========================================================
+/* =========================================================
+   MONTHLY CHARGE BAND
+========================================================= */
 
-async function loadGenderChart() {
+async function loadChargeChart() {
 
-    await loadCategoryChart(
-        "/dashboard/churn-by-gender",
-        "genderChart",
-        "gender",
-        "gender"
-    );
-}
+    try {
 
-
-async function loadPartnerChart() {
-
-    await loadCategoryChart(
-        "/dashboard/churn-by-partner",
-        "partnerChart",
-        "partner",
-        "partner"
-    );
-}
+        const data =
+            await getJSON(
+                "/dashboard/churn-by-charges"
+            );
 
 
-async function loadContractChart() {
-
-    await loadCategoryChart(
-        "/dashboard/churn-by-contract",
-        "contractChart",
-        "contract",
-        "contract"
-    );
-}
+        const rows =
+            data.data ||
+            [];
 
 
-async function loadInternetChart() {
+        createBarChart(
+            "chargeBandChart",
 
-    await loadCategoryChart(
-        "/dashboard/churn-by-internet",
-        "internetChart",
-        "internet",
-        "internet_service"
-    );
-}
+            rows.map(
+                row =>
+                    row.charge_band
+            ),
 
+            rows.map(
+                row =>
+                    Number(
+                        row.churn_rate ||
+                        0
+                    )
+            ),
 
-async function loadTenureChart() {
+            "chargeBand",
 
-    await loadCategoryChart(
-        "/dashboard/churn-by-tenure",
-        "tenureChart",
-        "tenure",
-        "tenure_segment"
-    );
-}
-
-
-async function loadPaymentChart() {
-
-    await loadCategoryChart(
-        "/dashboard/churn-by-payment",
-        "paymentChart",
-        "payment",
-        "payment_method"
-    );
-}
-
-
-async function loadServicesChart() {
-
-    await loadCategoryChart(
-        "/dashboard/churn-by-services",
-        "servicesChart",
-        "services",
-        "total_services"
-    );
-}
-
-
-// =========================================================
-// CUSTOMER TABLE
-// =========================================================
-
-async function loadCustomers() {
-
-    const result =
-        await getJSON(
-            "/dashboard/customers"
+            true
         );
 
+    } catch (error) {
 
-    const tbody =
-        document.getElementById(
-            "customerTableBody"
+        console.warn(
+            "Charge-band chart unavailable:",
+            error.message
         );
+    }
+}
 
 
-    tbody.innerHTML = "";
+/* =========================================================
+   CUSTOMER RISK INDICATORS
+========================================================= */
+
+function getRiskIndicators(
+    customer
+) {
+
+    const indicators = [];
 
 
     if (
-        !result.customers ||
-        result.customers.length === 0
+        customer.contract ===
+        "Month-to-month"
     ) {
 
-        tbody.innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="5"
-                    class="loading"
-                >
-                    No predicted customers found.
-                </td>
-
-            </tr>
-
-        `;
-
-        return;
+        indicators.push(
+            "Month-to-month contract"
+        );
     }
 
 
-    result.customers.forEach(
-        customer => {
+    if (
+        customer.tenure != null &&
+        Number(customer.tenure) <= 12
+    ) {
 
-            const row =
-                document.createElement(
-                    "tr"
-                );
-
-
-            row.classList.add(
-                "clickable"
-            );
+        indicators.push(
+            "Early tenure"
+        );
+    }
 
 
-            const churn =
-                customer.churn ??
-                "N/A";
+    if (
+        customer.onlinesecurity ===
+        "No"
+    ) {
+
+        indicators.push(
+            "No online security"
+        );
+    }
 
 
-            const churnClass =
-                churn === "Yes"
-                    ? "churn-yes"
-                    : churn === "No"
-                        ? "churn-no"
-                        : "";
+    if (
+        customer.techsupport ===
+        "No"
+    ) {
+
+        indicators.push(
+            "No tech support"
+        );
+    }
 
 
-            addCell(
-                row,
-                customer.customerid
-            );
+    if (
+        customer.paymentmethod ===
+        "Electronic check"
+    ) {
+
+        indicators.push(
+            "Electronic check"
+        );
+    }
 
 
-            addCell(
-                row,
-                churn,
-                churnClass
-            );
+    if (
+        customer.monthlycharges != null &&
+        Number(customer.monthlycharges) >= 80
+    ) {
+
+        indicators.push(
+            "High monthly charge"
+        );
+    }
 
 
-            addCell(
-                row,
-                customer.churn_probability != null
-                    ? percentFormat(
-                        customer.churn_probability
-                    )
-                    : "N/A"
-            );
+    if (
+        customer.internetservice ===
+        "Fiber optic"
+    ) {
+
+        indicators.push(
+            "Fiber optic service"
+        );
+    }
 
 
-            addCell(
-                row,
-                customer.predicted_ltv != null
-                    ? currencyFormat(
-                        customer.predicted_ltv
-                    )
-                    : "N/A"
-            );
-
-
-            addCell(
-                row,
-                dateFormat(
-                    customer.prediction_at
-                )
-            );
-
-
-            row.addEventListener(
-                "click",
-                () => {
-
-                    if (!customer.customerid) {
-                        return;
-                    }
-
-
-                    document.getElementById(
-                        "customerIdInput"
-                    ).value =
-                        customer.customerid;
-
-
-                    searchCustomer(
-                        customer.customerid
-                    );
-                }
-            );
-
-
-            tbody.appendChild(
-                row
-            );
-        }
+    return indicators.slice(
+        0,
+        5
     );
 }
 
 
-// =========================================================
-// PRIORITY CUSTOMERS
-// =========================================================
+/* =========================================================
+   PRIORITY CUSTOMERS
+========================================================= */
 
 async function loadPriorityCustomers() {
 
-    const result =
+    const data =
         await getJSON(
             "/dashboard/priority-customers"
         );
 
 
-    const tbody =
-        document.getElementById(
-            "priorityTableBody"
+    const customers =
+        (
+            data.priority_customers ||
+            []
+        ).slice(
+            0,
+            2
         );
 
 
-    tbody.innerHTML = "";
+    const container =
+        $("priorityCards");
 
 
     if (
-        !result.priority_customers ||
-        result.priority_customers.length === 0
+        customers.length ===
+        0
     ) {
 
-        tbody.innerHTML = `
+        container.innerHTML =
 
-            <tr>
-
-                <td
-                    colspan="7"
-                    class="loading"
-                >
-                    No high-risk, high-LTV customers found.
-                </td>
-
-            </tr>
-
-        `;
+            `<div class="panel muted">
+                No current priority customers.
+            </div>`;
 
         return;
     }
 
 
-    result.priority_customers.forEach(
-        customer => {
+    container.innerHTML =
+        customers.map(
+            customer => {
 
-            const row =
-                document.createElement(
-                    "tr"
+                const probability =
+                    Number(
+                        customer.churn_probability ||
+                        0
+                    );
+
+
+                const reasons =
+                    getRiskIndicators(
+                        customer
+                    );
+
+
+                return `
+
+                    <article
+                        class="panel priority-card"
+                        data-customer-id="${safe(
+                            customer.customerid
+                        )}"
+                    >
+
+                        <div class="priority-header">
+
+                            <div>
+
+                                <span class="eyebrow">
+                                    PRIORITY CUSTOMER
+                                </span>
+
+                                <div class="priority-id">
+                                    ${safe(
+                                        customer.customerid
+                                    )}
+                                </div>
+
+                                <div class="priority-sub">
+                                    ${safe(
+                                        customer.contract
+                                    )}
+                                </div>
+
+                            </div>
+
+
+                            <div class="priority-score">
+
+                                <strong>
+                                    ${percentFormat(
+                                        probability
+                                    )}
+                                </strong>
+
+                                <small>
+                                    churn probability
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="priority-metrics">
+
+                            <div>
+
+                                <span>
+                                    Predicted LTV
+                                </span>
+
+                                <strong>
+                                    ${currencyFormat(
+                                        customer.predicted_ltv
+                                    )}
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>
+                                    Tenure
+                                </span>
+
+                                <strong>
+                                    ${safe(
+                                        customer.tenure
+                                    )} months
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>
+                                    Monthly charge
+                                </span>
+
+                                <strong>
+                                    ${currencyFormat(
+                                        customer.monthlycharges
+                                    )}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="priority-reasons">
+
+                            <div class="priority-reasons-title">
+                                PROFILE INDICATORS
+                            </div>
+
+                            <div class="risk-chips">
+
+                                ${
+                                    reasons.length
+                                    ?
+
+                                    reasons.map(
+                                        reason =>
+                                            `<span>
+                                                ${reason}
+                                            </span>`
+                                    ).join("")
+
+                                    :
+
+                                    `<span>
+                                        No configured indicators
+                                    </span>`
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </article>
+                `;
+            }
+        ).join("");
+
+
+    container
+        .querySelectorAll(
+            "[data-customer-id]"
+        )
+        .forEach(
+            card => {
+
+                card.addEventListener(
+                    "click",
+                    () =>
+                        loadCustomerDetail(
+                            card.dataset.customerId
+                        )
                 );
+            }
+        );
+}
 
 
-            row.classList.add(
-                "clickable"
-            );
+/* =========================================================
+   CUSTOMER SEARCH
+========================================================= */
+
+function customerSearchText(
+    customer
+) {
+
+    return [
+
+        customer.customerid,
+
+        customer.contract,
+
+        customer.paymentmethod,
+
+        customer.internetservice,
+
+        customer.tenuregroup,
+
+        customer.gender,
+
+        customer.churn
+
+    ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+}
 
 
-            addCell(
-                row,
-                customer.customerid
-            );
+function applyFilters() {
+
+    const query =
+        $("customerSearchInput")
+            .value
+            .trim()
+            .toLowerCase();
 
 
-            addCell(
-                row,
-                percentFormat(
-                    customer.churn_probability
-                ),
-                "churn-yes"
-            );
+    const risk =
+        $("riskFilter")
+            .value;
 
 
-            addCell(
-                row,
-                currencyFormat(
-                    customer.predicted_ltv
-                )
-            );
+    filteredCustomers =
+        allCustomers.filter(
+            customer => {
+
+                const probability =
+                    Number(
+                        customer.churn_probability ||
+                        0
+                    );
 
 
-            addCell(
-                row,
-                valueOrNA(
-                    customer.contract
-                )
-            );
+                const matchesQuery =
+
+                    !query ||
+
+                    customerSearchText(
+                        customer
+                    ).includes(
+                        query
+                    );
 
 
-            addCell(
-                row,
-                customer.tenure != null
-                    ? `${customer.tenure} months`
-                    : "N/A"
-            );
+                const matchesRisk =
+
+                    risk === "all" ||
+
+                    (
+                        risk === "high" &&
+                        probability >= 0.70
+                    ) ||
+
+                    (
+                        risk === "medium" &&
+                        probability >= 0.40 &&
+                        probability < 0.70
+                    ) ||
+
+                    (
+                        risk === "low" &&
+                        probability < 0.40
+                    );
 
 
-            addCell(
-                row,
-                customer.monthlycharges != null
-                    ? currencyFormat(
-                        customer.monthlycharges
-                    )
-                    : "N/A"
-            );
+                return (
+                    matchesQuery &&
+                    matchesRisk
+                );
+            }
+        );
 
 
-            addCell(
-                row,
-                dateFormat(
-                    customer.prediction_at
-                )
-            );
+    currentPage = 1;
+
+    renderCustomerTable();
+}
 
 
-            row.addEventListener(
-                "click",
-                () => {
+/* =========================================================
+   CUSTOMER TABLE
+========================================================= */
 
-                    if (!customer.customerid) {
-                        return;
+function renderCustomerTable() {
+
+    const pageSize =
+        Number(
+            $("pageSize").value
+        );
+
+
+    const start =
+        (
+            currentPage - 1
+        ) * pageSize;
+
+
+    const rows =
+        filteredCustomers.slice(
+            start,
+            start + pageSize
+        );
+
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                filteredCustomers.length /
+                pageSize
+            )
+        );
+
+
+    const tbody =
+        $("customerTableBody");
+
+
+    if (
+        rows.length ===
+        0
+    ) {
+
+        tbody.innerHTML =
+
+            `<tr>
+                <td
+                    colspan="8"
+                    class="empty-cell"
+                >
+                    No matching customers.
+                </td>
+            </tr>`;
+
+    } else {
+
+        tbody.innerHTML =
+
+            rows.map(
+                customer => {
+
+                    const probability =
+                        Number(
+                            customer.churn_probability ||
+                            0
+                        );
+
+
+                    let riskClass =
+                        "risk-low";
+
+
+                    if (
+                        probability >=
+                        0.70
+                    ) {
+
+                        riskClass =
+                            "risk-high";
+
+                    } else if (
+                        probability >=
+                        0.40
+                    ) {
+
+                        riskClass =
+                            "risk-medium";
                     }
 
 
-                    document.getElementById(
-                        "customerIdInput"
-                    ).value =
-                        customer.customerid;
+                    return `
 
+                        <tr
+                            data-customer-id="${safe(
+                                customer.customerid
+                            )}"
+                        >
 
-                    searchCustomer(
-                        customer.customerid
-                    );
+                            <td>
+                                ${safe(
+                                    customer.customerid
+                                )}
+                            </td>
+
+                            <td
+                                class="${riskClass}"
+                            >
+                                ${percentFormat(
+                                    probability
+                                )}
+                            </td>
+
+                            <td>
+                                ${currencyFormat(
+                                    customer.predicted_ltv
+                                )}
+                            </td>
+
+                            <td>
+                                ${safe(
+                                    customer.contract
+                                )}
+                            </td>
+
+                            <td>
+                                ${safe(
+                                    customer.tenure
+                                )} mo
+                            </td>
+
+                            <td>
+                                ${currencyFormat(
+                                    customer.monthlycharges
+                                )}
+                            </td>
+
+                            <td>
+                                ${safe(
+                                    customer.internetservice
+                                )}
+                            </td>
+
+                            <td
+                                class="${
+                                    customer.churn === "Yes"
+                                    ? "churn-yes"
+                                    : "churn-no"
+                                }"
+                            >
+                                ${safe(
+                                    customer.churn
+                                )}
+                            </td>
+
+                        </tr>
+                    `;
                 }
-            );
-
-
-            tbody.appendChild(
-                row
-            );
-        }
-    );
-}
-
-
-// =========================================================
-// TABLE CELL CREATION
-// =========================================================
-
-function addCell(
-    row,
-    value,
-    className = ""
-) {
-
-    const cell =
-        document.createElement(
-            "td"
-        );
-
-
-    cell.textContent =
-        valueOrNA(value);
-
-
-    if (className) {
-        cell.className =
-            className;
+            ).join("");
     }
 
 
-    row.appendChild(
-        cell
-    );
+    tbody
+        .querySelectorAll(
+            "[data-customer-id]"
+        )
+        .forEach(
+            row => {
+
+                row.addEventListener(
+                    "click",
+                    () =>
+                        loadCustomerDetail(
+                            row.dataset.customerId
+                        )
+                );
+            }
+        );
+
+
+    $("pageInfo").textContent =
+
+        `Page ${currentPage} of ${totalPages} · ` +
+        `${numberFormat(
+            filteredCustomers.length
+        )} records`;
+
+
+    $("prevPage").disabled =
+        currentPage <= 1;
+
+
+    $("nextPage").disabled =
+        currentPage >= totalPages;
 }
 
 
-// =========================================================
-// CUSTOMER SEARCH
-// =========================================================
+/* =========================================================
+   LOAD ALL CUSTOMERS
+========================================================= */
 
-async function searchCustomer(
+async function loadCustomers() {
+
+    const data =
+        await getJSON(
+            "/dashboard/customers?limit=10000&offset=0"
+        );
+
+
+    allCustomers =
+        data.customers ||
+        [];
+
+
+    filteredCustomers =
+        allCustomers;
+
+
+    $("customerCountLabel").textContent =
+
+        `${numberFormat(
+            data.total_count ??
+            allCustomers.length
+        )} records available`;
+
+
+    renderCustomerTable();
+}
+
+
+/* =========================================================
+   CUSTOMER DETAIL
+========================================================= */
+
+async function loadCustomerDetail(
     customerId
 ) {
-
-    const messageElement =
-        document.getElementById(
-            "searchMessage"
-        );
-
-
-    const detailsSection =
-        document.getElementById(
-            "customerDetailsSection"
-        );
-
-
-    messageElement.textContent =
-        "";
-
-
-    if (
-        !customerId ||
-        customerId.trim() === ""
-    ) {
-
-        detailsSection.classList.add(
-            "hidden"
-        );
-
-
-        messageElement.textContent =
-            "Please enter a Customer ID.";
-
-        return;
-    }
-
-
-    customerId =
-        customerId.trim();
-
 
     try {
 
         const result =
             await getJSON(
-                `/dashboard/customer/${encodeURIComponent(customerId)}`
+                `/dashboard/customer/${encodeURIComponent(
+                    customerId
+                )}`
             );
 
 
-        displayCustomer(
-            result.customer
-        );
+        const customer =
+            result.customer ||
+            {};
 
+
+        $("selectedCustomerTitle")
+            .textContent =
+            safe(
+                customer.customerid
+            );
+
+
+        $("searchMessage")
+            .textContent =
+            "Customer profile and model prediction";
+
+
+        const fieldMap = {
+
+            detailCustomerId:
+                "customerid",
+
+            detailGender:
+                "gender",
+
+            detailSeniorCitizen:
+                "seniorcitizen",
+
+            detailPartner:
+                "partner",
+
+            detailDependents:
+                "dependents",
+
+            detailTenure:
+                "tenure",
+
+            detailTenureGroup:
+                "tenuregroup",
+
+            detailPhoneService:
+                "phoneservice",
+
+            detailMultipleLines:
+                "multiplelines",
+
+            detailInternetService:
+                "internetservice",
+
+            detailOnlineSecurity:
+                "onlinesecurity",
+
+            detailOnlineBackup:
+                "onlinebackup",
+
+            detailDeviceProtection:
+                "deviceprotection",
+
+            detailTechSupport:
+                "techsupport",
+
+            detailStreamingTV:
+                "streamingtv",
+
+            detailStreamingMovies:
+                "streamingmovies",
+
+            detailTotalServices:
+                "totalservices",
+
+            detailContract:
+                "contract",
+
+            detailPaymentMethod:
+                "paymentmethod",
+
+            detailPaperlessBilling:
+                "paperlessbilling",
+
+            detailChurn:
+                "churn"
+        };
+
+
+        Object.entries(
+            fieldMap
+        )
+            .forEach(
+                ([elementId, field]) => {
+
+                    const element =
+                        $(elementId);
+
+                    if (element) {
+
+                        element.textContent =
+                            safe(
+                                customer[field]
+                            );
+                    }
+                }
+            );
+
+
+        $("detailMonthlyCharges")
+            .textContent =
+            currencyFormat(
+                customer.monthlycharges
+            );
+
+
+        $("detailTotalCharges")
+            .textContent =
+            currencyFormat(
+                customer.totalcharges
+            );
+
+
+        $("detailChurnProbability")
+            .textContent =
+            percentFormat(
+                customer.churn_probability
+            );
+
+
+        $("detailPredictedLtv")
+            .textContent =
+            currencyFormat(
+                customer.predicted_ltv
+            );
+
+
+        $("detailPredictionAt")
+            .textContent =
+            dateFormat(
+                customer.prediction_at
+            );
+
+
+        const probability =
+            Number(
+                customer.churn_probability ||
+                0
+            );
+
+
+        const badge =
+            $("detailChurnBadge");
+
+
+        if (
+            probability >= 0.70
+        ) {
+
+            badge.textContent =
+                "High risk";
+
+            badge.className =
+                "risk-badge high";
+
+        } else if (
+            probability >= 0.40
+        ) {
+
+            badge.textContent =
+                "Medium risk";
+
+            badge.className =
+                "risk-badge medium";
+
+        } else {
+
+            badge.textContent =
+                "Low risk";
+
+            badge.className =
+                "risk-badge low";
+        }
+
+
+        const indicators =
+            getRiskIndicators(
+                customer
+            );
+
+
+        $("riskDrivers")
+            .innerHTML =
+
+            indicators.length
+
+                ?
+
+                indicators.map(
+                    item =>
+                        `<span>
+                            ${item}
+                        </span>`
+                ).join("")
+
+                :
+
+                `<span>
+                    No configured profile indicators
+                </span>`;
+
+
+        document
+            .querySelector(
+                "#customer-detail"
+            )
+            .scrollIntoView({
+                behavior:
+                    "smooth"
+            });
 
     } catch (error) {
 
         console.error(
-            "Customer search failed:",
             error
         );
 
-
-        detailsSection.classList.add(
-            "hidden"
-        );
-
-
-        messageElement.textContent =
+        $("searchMessage")
+            .textContent =
             error.message;
     }
 }
 
 
-// =========================================================
-// DISPLAY CUSTOMER DETAILS
-// IMPORTANT:
-// These field names exactly match the API response.
-// =========================================================
+/* =========================================================
+   THEME
+========================================================= */
 
-function displayCustomer(
-    customer
-) {
+function initTheme() {
 
-    const detailsSection =
-        document.getElementById(
-            "customerDetailsSection"
+    const savedTheme =
+        localStorage.getItem(
+            "dashboardTheme"
+        ) ||
+        "light";
+
+
+    document.documentElement
+        .setAttribute(
+            "data-theme",
+            savedTheme
         );
 
 
-    detailsSection.classList.remove(
-        "hidden"
-    );
-
-
-    document.getElementById(
-        "selectedCustomerId"
-    ).textContent =
-        valueOrNA(
-            customer.customerid
-        );
-
-
-    // -----------------------------------------------------
-    // CUSTOMER INFORMATION
-    // -----------------------------------------------------
-
-    document.getElementById(
-        "detailCustomerId"
-    ).textContent =
-        valueOrNA(
-            customer.customerid
-        );
-
-
-    document.getElementById(
-        "detailGender"
-    ).textContent =
-        valueOrNA(
-            customer.gender
-        );
-
-
-    document.getElementById(
-        "detailSeniorCitizen"
-    ).textContent =
-        valueOrNA(
-            customer.seniorcitizen
-        );
-
-
-    document.getElementById(
-        "detailPartner"
-    ).textContent =
-        valueOrNA(
-            customer.partner
-        );
-
-
-    document.getElementById(
-        "detailDependents"
-    ).textContent =
-        valueOrNA(
-            customer.dependents
-        );
-
-
-    document.getElementById(
-        "detailTenure"
-    ).textContent =
-        customer.tenure != null
-            ? `${customer.tenure} months`
-            : "N/A";
-
-
-    // -----------------------------------------------------
-    // SERVICES
-    // -----------------------------------------------------
-
-    document.getElementById(
-        "detailPhoneService"
-    ).textContent =
-        valueOrNA(
-            customer.phoneservice
-        );
-
-
-    document.getElementById(
-        "detailMultipleLines"
-    ).textContent =
-        valueOrNA(
-            customer.multiplelines
-        );
-
-
-    document.getElementById(
-        "detailInternetService"
-    ).textContent =
-        valueOrNA(
-            customer.internetservice
-        );
-
-
-    document.getElementById(
-        "detailOnlineSecurity"
-    ).textContent =
-        valueOrNA(
-            customer.onlinesecurity
-        );
-
-
-    document.getElementById(
-        "detailOnlineBackup"
-    ).textContent =
-        valueOrNA(
-            customer.onlinebackup
-        );
-
-
-    document.getElementById(
-        "detailDeviceProtection"
-    ).textContent =
-        valueOrNA(
-            customer.deviceprotection
-        );
-
-
-    document.getElementById(
-        "detailTechSupport"
-    ).textContent =
-        valueOrNA(
-            customer.techsupport
-        );
-
-
-    document.getElementById(
-        "detailStreamingTV"
-    ).textContent =
-        valueOrNA(
-            customer.streamingtv
-        );
-
-
-    document.getElementById(
-        "detailStreamingMovies"
-    ).textContent =
-        valueOrNA(
-            customer.streamingmovies
-        );
-
-
-    // -----------------------------------------------------
-    // BILLING & CONTRACT
-    // -----------------------------------------------------
-
-    document.getElementById(
-        "detailContract"
-    ).textContent =
-        valueOrNA(
-            customer.contract
-        );
-
-
-    document.getElementById(
-        "detailPaperlessBilling"
-    ).textContent =
-        valueOrNA(
-            customer.paperlessbilling
-        );
-
-
-    document.getElementById(
-        "detailPaymentMethod"
-    ).textContent =
-        valueOrNA(
-            customer.paymentmethod
-        );
-
-
-    document.getElementById(
-        "detailMonthlyCharges"
-    ).textContent =
-        customer.monthlycharges != null
-            ? currencyFormat(
-                customer.monthlycharges
-            )
-            : "N/A";
-
-
-    document.getElementById(
-        "detailTotalCharges"
-    ).textContent =
-        customer.totalcharges != null
-            ? currencyFormat(
-                customer.totalcharges
-            )
-            : "N/A";
-
-
-    document.getElementById(
-        "detailTenureGroup"
-    ).textContent =
-        valueOrNA(
-            customer.tenuregroup
-        );
-
-
-    document.getElementById(
-        "detailTotalServices"
-    ).textContent =
-        valueOrNA(
-            customer.totalservices
-        );
-
-
-    // -----------------------------------------------------
-    // ML PREDICTION
-    // -----------------------------------------------------
-
-    const churnElement =
-        document.getElementById(
-            "detailChurn"
-        );
-
-
-    const churn =
-        customer.churn;
-
-
-    churnElement.textContent =
-        valueOrNA(churn);
-
-
-    churnElement.className =
-        "";
-
-
-    if (churn === "Yes") {
-
-        churnElement.classList.add(
-            "churn-yes"
-        );
-
-    } else if (churn === "No") {
-
-        churnElement.classList.add(
-            "churn-no"
-        );
-    }
-
-
-    document.getElementById(
-        "detailChurnProbability"
-    ).textContent =
-
-        customer.churn_probability != null
-            ? percentFormat(
-                customer.churn_probability
-            )
-            : "N/A";
-
-
-    document.getElementById(
-        "detailPredictedLtv"
-    ).textContent =
-
-        customer.predicted_ltv != null
-            ? currencyFormat(
-                customer.predicted_ltv
-            )
-            : "N/A";
-
-
-    document.getElementById(
-        "detailPredictionAt"
-    ).textContent =
-        dateFormat(
-            customer.prediction_at
-        );
-
-
-    detailsSection.scrollIntoView({
-
-        behavior: "smooth",
-
-        block: "start"
-    });
+    $("themeToggle")
+        .textContent =
+        savedTheme === "dark"
+            ? "Light"
+            : "Dark";
 }
 
 
-// =========================================================
-// LOAD COMPLETE DASHBOARD
-// =========================================================
+function toggleTheme() {
+
+    const current =
+        document.documentElement
+            .getAttribute(
+                "data-theme"
+            );
+
+
+    const next =
+        current === "dark"
+            ? "light"
+            : "dark";
+
+
+    document.documentElement
+        .setAttribute(
+            "data-theme",
+            next
+        );
+
+
+    localStorage.setItem(
+        "dashboardTheme",
+        next
+    );
+
+
+    $("themeToggle")
+        .textContent =
+        next === "dark"
+            ? "Light"
+            : "Dark";
+
+
+    /*
+       Rebuild charts so Chart.js picks up
+       the new text/grid colors.
+    */
+
+    loadDashboard();
+}
+
+
+/* =========================================================
+   DASHBOARD LOAD
+========================================================= */
 
 async function loadDashboard() {
 
     await checkAPI();
 
 
-    const operations = [
+    const summaryData =
+        await loadSummary();
 
-        loadSummary(),
 
-        loadChurnOutcomeChart(),
+    const tasks = [
 
-        loadChurnRiskChart(),
+        loadExecutiveInsights(),
+
+        loadRevenueRisk(),
+
+        Promise.resolve(
+            renderOutcomeChart(
+                summaryData
+            )
+        ),
+
+        loadRiskChart(),
 
         loadLtvChart(),
 
-        loadGenderChart(),
+        loadRiskLtvChart(),
 
-        loadPartnerChart(),
+        loadChargeChart(),
 
-        loadContractChart(),
+        loadSegmentChart(
+            "/dashboard/churn-by-contract",
+            "contractChart",
+            "contract",
+            "contract"
+        ),
 
-        loadInternetChart(),
+        loadSegmentChart(
+            "/dashboard/churn-by-tenure",
+            "tenureChart",
+            "tenure",
+            "tenure_segment"
+        ),
 
-        loadTenureChart(),
+        loadSegmentChart(
+            "/dashboard/churn-by-internet",
+            "internetChart",
+            "internet",
+            "internet_service"
+        ),
 
-        loadPaymentChart(),
+        loadSegmentChart(
+            "/dashboard/churn-by-payment",
+            "paymentChart",
+            "payment",
+            "payment_method"
+        ),
 
-        loadServicesChart(),
+        loadSegmentChart(
+            "/dashboard/churn-by-services",
+            "servicesChart",
+            "services",
+            "total_services"
+        ),
+
+        loadSegmentChart(
+            "/dashboard/churn-by-gender",
+            "genderChart",
+            "gender",
+            "gender"
+        ),
 
         loadPriorityCustomers(),
 
@@ -1431,12 +2064,12 @@ async function loadDashboard() {
 
     const results =
         await Promise.allSettled(
-            operations
+            tasks
         );
 
 
     results.forEach(
-        (result, index) => {
+        result => {
 
             if (
                 result.status ===
@@ -1444,7 +2077,7 @@ async function loadDashboard() {
             ) {
 
                 console.error(
-                    `Dashboard component ${index + 1} failed:`,
+                    "Dashboard task failed:",
                     result.reason
                 );
             }
@@ -1453,45 +2086,32 @@ async function loadDashboard() {
 }
 
 
-// =========================================================
-// EVENT LISTENERS
-// =========================================================
+/* =========================================================
+   EVENTS
+========================================================= */
 
-document
-    .getElementById(
-        "refreshButton"
-    )
+$("refreshButton")
     .addEventListener(
         "click",
         loadDashboard
     );
 
 
-document
-    .getElementById(
-        "searchButton"
-    )
+$("themeToggle")
     .addEventListener(
         "click",
-        () => {
-
-            const customerId =
-                document.getElementById(
-                    "customerIdInput"
-                ).value;
-
-
-            searchCustomer(
-                customerId
-            );
-        }
+        toggleTheme
     );
 
 
-document
-    .getElementById(
-        "customerIdInput"
-    )
+$("searchTableButton")
+    .addEventListener(
+        "click",
+        applyFilters
+    );
+
+
+$("customerSearchInput")
     .addEventListener(
         "keydown",
         event => {
@@ -1501,23 +2121,87 @@ document
                 "Enter"
             ) {
 
-                const customerId =
-                    document.getElementById(
-                        "customerIdInput"
-                    ).value;
-
-
-                searchCustomer(
-                    customerId
-                );
+                applyFilters();
             }
         }
     );
 
 
-// =========================================================
-// INITIAL LOAD
-// =========================================================
+$("riskFilter")
+    .addEventListener(
+        "change",
+        applyFilters
+    );
+
+
+$("pageSize")
+    .addEventListener(
+        "change",
+        () => {
+
+            currentPage = 1;
+
+            renderCustomerTable();
+        }
+    );
+
+
+$("prevPage")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                currentPage > 1
+            ) {
+
+                currentPage--;
+
+                renderCustomerTable();
+            }
+        }
+    );
+
+
+$("nextPage")
+    .addEventListener(
+        "click",
+        () => {
+
+            const pageSize =
+                Number(
+                    $("pageSize").value
+                );
+
+
+            const totalPages =
+                Math.max(
+                    1,
+                    Math.ceil(
+                        filteredCustomers.length /
+                        pageSize
+                    )
+                );
+
+
+            if (
+                currentPage <
+                totalPages
+            ) {
+
+                currentPage++;
+
+                renderCustomerTable();
+            }
+        }
+    );
+
+
+/* =========================================================
+   START
+========================================================= */
+
+initTheme();
 
 window.addEventListener(
     "load",
