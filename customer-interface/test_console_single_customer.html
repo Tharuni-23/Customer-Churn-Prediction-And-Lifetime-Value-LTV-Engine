@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        TelcoConnect - Test & Prediction Console
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --blue: #2874f0;
+            --blue-dark: #1d5fc4;
+            --blue-light: #e8f0fe;
+            --background: #f1f3f6;
+            --card: #ffffff;
+            --text: #212121;
+            --muted: #6f6f6f;
+            --border: #e0e0e0;
+            --success: #2e7d32;
+            --success-light: #e8f5e9;
+            --danger: #d32f2f;
+            --danger-light: #ffebee;
+            --warning: #b26a00;
+            --warning-light: #fff4e5;
+        }
+
+        body.dark {
+            --blue-light: #17263f;
+            --background: #111827;
+            --card: #17202b;
+            --text: #f4f6f8;
+            --muted: #9ca3af;
+            --border: #2d3748;
+            --success-light: #15351b;
+            --danger-light: #3b171a;
+            --warning-light: #3c2b12;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        .container {
+            width: min(1100px, 94%);
+            margin: 30px auto 50px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .brand {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            color: var(--blue);
+        }
+
+        .theme-button {
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            width: 42px;
+            height: 42px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+
+        .hero-label {
+            font-size: 11px;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            color: var(--blue);
+            margin-bottom: 7px;
+        }
+
+        .hero h1 {
+            font-size: 27px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--card);
+        }
+
+        .tab-button {
+            border: 0;
+            border-right: 1px solid var(--border);
+            background: var(--card);
+            color: var(--muted);
+            padding: 14px 18px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .tab-button.active {
+            color: var(--blue);
+            box-shadow: inset 0 -2px 0 var(--blue);
+        }
+
+        .tab-panel {
+            display: none;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-top: 0;
+            padding: 24px;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .section-description {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .batch-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            border: 1px solid var(--border);
+            padding: 18px;
+            background: var(--background);
+        }
+
+        .summary-label {
+            display: block;
+            color: var(--muted);
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .summary-value {
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        button.primary-button,
+        button.secondary-button {
+            padding: 12px 18px;
+            border: 0;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .primary-button {
+            background: var(--blue);
+            color: white;
+        }
+
+        .primary-button:hover {
+            background: var(--blue-dark);
+        }
+
+        .secondary-button {
+            background: var(--background);
+            color: var(--text);
+            border: 1px solid var(--border) !important;
+        }
+
+        .primary-button:disabled,
+        .secondary-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-box {
+            margin-top: 18px;
+            border: 1px solid var(--border);
+            padding: 14px;
+            background: var(--background);
+        }
+
+        .status-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .status-ready {
+            color: var(--text);
+        }
+
+        .status-success {
+            color: var(--success);
+        }
+
+        .status-error {
+            color: var(--danger);
+        }
+
+        .error-box {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid #ef9a9a;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .wizard-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .progress {
+            height: 4px;
+            background: var(--border);
+            margin-bottom: 22px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 25%;
+            background: var(--blue);
+            transition: width 0.2s ease;
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .step-title {
+            font-size: 17px;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .step-description {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 18px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 13px;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--blue);
+        }
+
+        .wizard-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 24px;
+            border-top: 1px solid var(--border);
+            padding-top: 18px;
+        }
+
+        .results {
+            display: none;
+            margin-top: 22px;
+            border-top: 2px solid var(--blue);
+            padding-top: 22px;
+        }
+
+        .results h3 {
+            margin-bottom: 14px;
+        }
+
+        .prediction-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .prediction-card {
+            border: 1px solid var(--border);
+            padding: 18px;
+            background: var(--background);
+        }
+
+        .prediction-label {
+            color: var(--muted);
+            font-size: 11px;
+            margin-bottom: 7px;
+        }
+
+        .prediction-value {
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        .high {
+            color: var(--danger);
+        }
+
+        .medium {
+            color: var(--warning);
+        }
+
+        .low {
+            color: var(--success);
+        }
+
+        .saved-message {
+            margin-top: 14px;
+            padding: 12px;
+            background: var(--success-light);
+            color: var(--success);
+            border: 1px solid #a5d6a7;
+            font-size: 13px;
+        }
+
+        .note {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 760px) {
+
+            .batch-grid,
+            .prediction-grid,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                border-right: 0;
+                border-bottom: 1px solid var(--border);
+                text-align: left;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <header class="header">
+
+            <div class="brand">
+                TELCOCONNECT
+            </div>
+
+            <button
+                type="button"
+                class="theme-button"
+                id="themeButton"
+            >
+                🌙
+            </button>
+
+        </header>
+
+
+        <section class="hero">
+
+            <div class="hero-label">
+                TEST & PREDICTION CONSOLE
+            </div>
+
+            <h1>
+                Customer Churn & LTV Engine
+            </h1>
+
+            <p>
+                Run controlled batch activity or submit one customer
+                manually for immediate churn probability and predicted
+                lifetime value. The single-customer flow uses the same
+                preprocessing and XGBoost models as the integrated pipeline.
+            </p>
+
+        </section>
+
+
+        <div class="tabs">
+
+            <button
+                class="tab-button active"
+                data-tab="batchPanel"
+            >
+                Batch Test Data
+            </button>
+
+            <button
+                class="tab-button"
+                data-tab="singlePanel"
+            >
+                Single Customer Prediction
+            </button>
+
+        </div>
+
+
+        <!-- ====================================================
+             BATCH PANEL
+        ===================================================== -->
+
+        <section
+            class="tab-panel active"
+            id="batchPanel"
+        >
+
+            <div class="section-title">
+                Generate Test Data
+            </div>
+
+            <div class="section-description">
+                Generate the controlled 200-record test activity already
+                used by the project: 150 existing-customer updates and
+                50 new customer inserts.
+            </div>
+
+            <div class="batch-grid">
+
+                <div class="summary-card">
+                    <span class="summary-label">
+                        Existing Updates
+                    </span>
+                    <span class="summary-value">
+                        150
+                    </span>
+                </div>
+
+                <div class="summary-card">
+                    <span class="summary-label">
+                        New Inserts
+                    </span>
+                    <span class="summary-value">
+                        50
+                    </span>
+                </div>
+
+                <div class="summary-card">
+                    <span class="summary-label">
+                        Total Records
+                    </span>
+                    <span class="summary-value">
+                        200
+                    </span>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                class="primary-button"
+                id="generateButton"
+            >
+                GENERATE TEST DATA
+            </button>
+
+            <div class="status-box">
+
+                <div class="status-label">
+                    STATUS
+                </div>
+
+                <div
+                    id="statusText"
+                    class="status-ready"
+                >
+                    Ready.
+                </div>
+
+            </div>
+
+            <div
+                id="batchError"
+                class="error-box"
+            ></div>
+
+            <div
+                id="batchResult"
+                class="results"
+            >
+
+                <h3>
+                    Database Generation Result
+                </h3>
+
+                <div class="prediction-grid">
+
+                    <div class="prediction-card">
+                        <div class="prediction-label">
+                            Existing Updated
+                        </div>
+                        <div
+                            class="prediction-value"
+                            id="updatedResult"
+                        >
+                            0
+                        </div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <div class="prediction-label">
+                            New Inserted
+                        </div>
+                        <div
+                            class="prediction-value"
+                            id="insertedResult"
+                        >
+                            0
+                        </div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <div class="prediction-label">
+                            Total Affected
+                        </div>
+                        <div
+                            class="prediction-value"
+                            id="totalResult"
+                        >
+                            0
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ====================================================
+             SINGLE CUSTOMER PANEL
+        ===================================================== -->
+
+        <section
+            class="tab-panel"
+            id="singlePanel"
+        >
+
+            <div class="section-title">
+                Single Customer Prediction
+            </div>
+
+            <div class="section-description">
+                Enter one customer record through the guided form.
+                After submission, the same preprocessing package and
+                XGBoost models produce the churn result and predicted
+                LTV, then the result is written to Neon PostgreSQL.
+            </div>
+
+
+            <div class="wizard-head">
+
+                <strong id="wizardStepTitle">
+                    Step 1 of 4
+                </strong>
+
+                <span
+                    class="step-label"
+                    id="wizardStepLabel"
+                >
+                    Customer Profile
+                </span>
+
+            </div>
+
+
+            <div class="progress">
+
+                <div
+                    class="progress-bar"
+                    id="progressBar"
+                ></div>
+
+            </div>
+
+
+            <form id="singleCustomerForm">
+
+
+                <!-- STEP 1 -->
+
+                <div
+                    class="form-step active"
+                    data-step="0"
+                >
+
+                    <div class="step-title">
+                        Customer Profile
+                    </div>
+
+                    <div class="step-description">
+                        Basic customer information.
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="field full">
+
+                            <label for="customerID">
+                                Customer ID
+                            </label>
+
+                            <input
+                                id="customerID"
+                                name="customerID"
+                                type="text"
+                                placeholder="Example: MANUAL-0001"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="gender">
+                                Gender
+                            </label>
+
+                            <select id="gender" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Male">
+                                    Male
+                                </option>
+                                <option value="Female">
+                                    Female
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="SeniorCitizen">
+                                Senior Citizen
+                            </label>
+
+                            <select id="SeniorCitizen" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="0">
+                                    No
+                                </option>
+                                <option value="1">
+                                    Yes
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="Partner">
+                                Partner
+                            </label>
+
+                            <select id="Partner" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="Dependents">
+                                Dependents
+                            </label>
+
+                            <select id="Dependents" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- STEP 2 -->
+
+                <div
+                    class="form-step"
+                    data-step="1"
+                >
+
+                    <div class="step-title">
+                        Tenure & Phone
+                    </div>
+
+                    <div class="step-description">
+                        Customer tenure and phone-service details.
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="field">
+
+                            <label for="tenure">
+                                Tenure (months)
+                            </label>
+
+                            <input
+                                id="tenure"
+                                type="number"
+                                min="0"
+                                max="72"
+                                placeholder="Example: 24"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="PhoneService">
+                                Phone Service
+                            </label>
+
+                            <select id="PhoneService" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="MultipleLines">
+                                Multiple Lines
+                            </label>
+
+                            <select id="MultipleLines" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                                <option value="No phone service">
+                                    No phone service
+                                </option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- STEP 3 -->
+
+                <div
+                    class="form-step"
+                    data-step="2"
+                >
+
+                    <div class="step-title">
+                        Services
+                    </div>
+
+                    <div class="step-description">
+                        Internet and subscribed service features.
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="field">
+
+                            <label for="InternetService">
+                                Internet Service
+                            </label>
+
+                            <select id="InternetService" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="DSL">
+                                    DSL
+                                </option>
+                                <option value="Fiber optic">
+                                    Fiber optic
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="OnlineSecurity">
+                                Online Security
+                            </label>
+
+                            <select id="OnlineSecurity" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="OnlineBackup">
+                                Online Backup
+                            </label>
+
+                            <select id="OnlineBackup" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="DeviceProtection">
+                                Device Protection
+                            </label>
+
+                            <select id="DeviceProtection" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="TechSupport">
+                                Tech Support
+                            </label>
+
+                            <select id="TechSupport" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="StreamingTV">
+                                Streaming TV
+                            </label>
+
+                            <select id="StreamingTV" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="StreamingMovies">
+                                Streaming Movies
+                            </label>
+
+                            <select id="StreamingMovies" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="TotalServices">
+                                Total Services
+                            </label>
+
+                            <input
+                                id="TotalServices"
+                                type="number"
+                                min="0"
+                                max="10"
+                                placeholder="Example: 4"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- STEP 4 -->
+
+                <div
+                    class="form-step"
+                    data-step="3"
+                >
+
+                    <div class="step-title">
+                        Contract & Billing
+                    </div>
+
+                    <div class="step-description">
+                        Contract, payment and charge information.
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="field">
+
+                            <label for="Contract">
+                                Contract
+                            </label>
+
+                            <select id="Contract" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Month-to-month">
+                                    Month-to-month
+                                </option>
+                                <option value="One year">
+                                    One year
+                                </option>
+                                <option value="Two year">
+                                    Two year
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="PaperlessBilling">
+                                Paperless Billing
+                            </label>
+
+                            <select id="PaperlessBilling" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Yes">
+                                    Yes
+                                </option>
+                                <option value="No">
+                                    No
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="PaymentMethod">
+                                Payment Method
+                            </label>
+
+                            <select id="PaymentMethod" required>
+                                <option value="">
+                                    Select
+                                </option>
+                                <option value="Electronic check">
+                                    Electronic check
+                                </option>
+                                <option value="Mailed check">
+                                    Mailed check
+                                </option>
+                                <option value="Bank transfer (automatic)">
+                                    Bank transfer (automatic)
+                                </option>
+                                <option value="Credit card (automatic)">
+                                    Credit card (automatic)
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="MonthlyCharges">
+                                Monthly Charges
+                            </label>
+
+                            <input
+                                id="MonthlyCharges"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="Example: 79.95"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="field">
+
+                            <label for="TotalCharges">
+                                Total Charges
+                            </label>
+
+                            <input
+                                id="TotalCharges"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                placeholder="Example: 1850.50"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="wizard-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="previousButton"
+                    >
+                        BACK
+                    </button>
+
+                    <button
+                        type="button"
+                        class="primary-button"
+                        id="nextButton"
+                    >
+                        NEXT
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div
+                id="singleError"
+                class="error-box"
+            ></div>
+
+
+            <!-- ==================================================
+                 PREDICTION RESULT
+            =================================================== -->
+
+            <div
+                id="predictionResults"
+                class="results"
+            >
+
+                <h3>
+                    Prediction Result
+                </h3>
+
+                <div class="prediction-grid">
+
+                    <div class="prediction-card">
+
+                        <div class="prediction-label">
+                            Customer
+                        </div>
+
+                        <div
+                            class="prediction-value"
+                            id="resultCustomer"
+                        >
+                            —
+                        </div>
+
+                    </div>
+
+
+                    <div class="prediction-card">
+
+                        <div class="prediction-label">
+                            Churn Probability
+                        </div>
+
+                        <div
+                            class="prediction-value"
+                            id="resultProbability"
+                        >
+                            —
+                        </div>
+
+                    </div>
+
+
+                    <div class="prediction-card">
+
+                        <div class="prediction-label">
+                            Risk Level
+                        </div>
+
+                        <div
+                            class="prediction-value"
+                            id="resultRisk"
+                        >
+                            —
+                        </div>
+
+                    </div>
+
+
+                    <div class="prediction-card">
+
+                        <div class="prediction-label">
+                            Predicted LTV
+                        </div>
+
+                        <div
+                            class="prediction-value"
+                            id="resultLTV"
+                        >
+                            —
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="saved-message">
+                    Prediction completed and saved to PostgreSQL.
+                    The manager dashboard can now read this customer's
+                    updated prediction.
+                </div>
+
+                <div class="note">
+                    Churn classification uses the project's 0.50 model
+                    threshold. Risk level shown here uses the dashboard
+                    interpretation: High ≥ 70%, Medium ≥ 40%, otherwise Low.
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <script>
+
+        const API_BASE =
+            "http://127.0.0.1:8000";
+
+
+        // ====================================================
+        // THEME
+        // ====================================================
+
+        const themeButton =
+            document.getElementById(
+                "themeButton"
+            );
+
+        function applyTheme(theme) {
+
+            if (theme === "dark") {
+
+                document.body.classList.add(
+                    "dark"
+                );
+
+                themeButton.textContent =
+                    "☀️";
+
+            } else {
+
+                document.body.classList.remove(
+                    "dark"
+                );
+
+                themeButton.textContent =
+                    "🌙";
+            }
+        }
+
+        const savedTheme =
+            localStorage.getItem(
+                "customerTheme"
+            );
+
+        applyTheme(
+            savedTheme === "dark"
+                ? "dark"
+                : "light"
+        );
+
+        themeButton.addEventListener(
+            "click",
+            function () {
+
+                const isDark =
+                    document.body.classList.contains(
+                        "dark"
+                    );
+
+                const newTheme =
+                    isDark
+                        ? "light"
+                        : "dark";
+
+                localStorage.setItem(
+                    "customerTheme",
+                    newTheme
+                );
+
+                applyTheme(
+                    newTheme
+                );
+            }
+        );
+
+
+        // ====================================================
+        // TABS
+        // ====================================================
+
+        const tabButtons =
+            document.querySelectorAll(
+                ".tab-button"
+            );
+
+        const tabPanels =
+            document.querySelectorAll(
+                ".tab-panel"
+            );
+
+        tabButtons.forEach(
+            function (button) {
+
+                button.addEventListener(
+                    "click",
+                    function () {
+
+                        tabButtons.forEach(
+                            function (item) {
+                                item.classList.remove(
+                                    "active"
+                                );
+                            }
+                        );
+
+                        tabPanels.forEach(
+                            function (panel) {
+                                panel.classList.remove(
+                                    "active"
+                                );
+                            }
+                        );
+
+                        button.classList.add(
+                            "active"
+                        );
+
+                        document.getElementById(
+                            button.dataset.tab
+                        ).classList.add(
+                            "active"
+                        );
+
+                    }
+                );
+            }
+        );
+
+
+        // ====================================================
+        // BATCH TEST GENERATOR
+        // ====================================================
+
+        const generateButton =
+            document.getElementById(
+                "generateButton"
+            );
+
+        const statusText =
+            document.getElementById(
+                "statusText"
+            );
+
+        const batchResult =
+            document.getElementById(
+                "batchResult"
+            );
+
+        const batchError =
+            document.getElementById(
+                "batchError"
+            );
+
+        generateButton.addEventListener(
+            "click",
+            async function () {
+
+                batchError.style.display =
+                    "none";
+
+                batchResult.style.display =
+                    "none";
+
+                generateButton.disabled =
+                    true;
+
+                generateButton.textContent =
+                    "GENERATING...";
+
+                statusText.className =
+                    "status-ready";
+
+                statusText.textContent =
+                    "Sending request to FastAPI...";
+
+                try {
+
+                    const response =
+                        await fetch(
+                            API_BASE +
+                            "/generate-test-data",
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                }
+                            }
+                        );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            "FastAPI returned HTTP " +
+                            response.status
+                        );
+                    }
+
+                    const data =
+                        await response.json();
+
+                    if (data.success !== true) {
+                        throw new Error(
+                            "Test data generation failed."
+                        );
+                    }
+
+                    document.getElementById(
+                        "updatedResult"
+                    ).textContent =
+                        data.updated;
+
+                    document.getElementById(
+                        "insertedResult"
+                    ).textContent =
+                        data.inserted;
+
+                    document.getElementById(
+                        "totalResult"
+                    ).textContent =
+                        data.total;
+
+                    batchResult.style.display =
+                        "block";
+
+                    statusText.className =
+                        "status-success";
+
+                    statusText.textContent =
+                        "Test data generated successfully.";
+
+                } catch (error) {
+
+                    console.error(
+                        "Generation error:",
+                        error
+                    );
+
+                    statusText.className =
+                        "status-error";
+
+                    statusText.textContent =
+                        "Generation failed.";
+
+                    batchError.style.display =
+                        "block";
+
+                    batchError.textContent =
+                        error.message;
+
+                } finally {
+
+                    generateButton.disabled =
+                        false;
+
+                    generateButton.textContent =
+                        "GENERATE TEST DATA";
+                }
+
+            }
+        );
+
+
+        // ====================================================
+        // SINGLE CUSTOMER WIZARD
+        // ====================================================
+
+        const steps =
+            document.querySelectorAll(
+                ".form-step"
+            );
+
+        const nextButton =
+            document.getElementById(
+                "nextButton"
+            );
+
+        const previousButton =
+            document.getElementById(
+                "previousButton"
+            );
+
+        const wizardStepTitle =
+            document.getElementById(
+                "wizardStepTitle"
+            );
+
+        const wizardStepLabel =
+            document.getElementById(
+                "wizardStepLabel"
+            );
+
+        const progressBar =
+            document.getElementById(
+                "progressBar"
+            );
+
+        const singleError =
+            document.getElementById(
+                "singleError"
+            );
+
+        const predictionResults =
+            document.getElementById(
+                "predictionResults"
+            );
+
+        let currentStep = 0;
+
+        const stepNames = [
+            "Customer Profile",
+            "Tenure & Phone",
+            "Services",
+            "Contract & Billing"
+        ];
+
+
+        function validateCurrentStep() {
+
+            const current =
+                steps[currentStep];
+
+            const fields =
+                current.querySelectorAll(
+                    "input, select"
+                );
+
+            for (
+                const field of fields
+            ) {
+
+                if (!field.checkValidity()) {
+
+                    field.reportValidity();
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+
+        function showStep(stepIndex) {
+
+            steps.forEach(
+                function (step, index) {
+
+                    step.classList.toggle(
+                        "active",
+                        index === stepIndex
+                    );
+                }
+            );
+
+            wizardStepTitle.textContent =
+                "Step " +
+                (stepIndex + 1) +
+                " of 4";
+
+            wizardStepLabel.textContent =
+                stepNames[stepIndex];
+
+            progressBar.style.width =
+                ((stepIndex + 1) / 4 * 100) +
+                "%";
+
+            previousButton.disabled =
+                stepIndex === 0;
+
+            if (stepIndex === steps.length - 1) {
+
+                nextButton.textContent =
+                    "RUN PREDICTION";
+
+            } else {
+
+                nextButton.textContent =
+                    "NEXT";
+            }
+        }
+
+
+        previousButton.addEventListener(
+            "click",
+            function () {
+
+                if (currentStep > 0) {
+
+                    currentStep -= 1;
+
+                    showStep(
+                        currentStep
+                    );
+                }
+            }
+        );
+
+
+        function getValue(id) {
+            return document.getElementById(id).value;
+        }
+
+
+        function createPayload() {
+
+            return {
+
+                customerID:
+                    getValue("customerID"),
+
+                gender:
+                    getValue("gender"),
+
+                SeniorCitizen:
+                    Number(
+                        getValue("SeniorCitizen")
+                    ),
+
+                Partner:
+                    getValue("Partner"),
+
+                Dependents:
+                    getValue("Dependents"),
+
+                tenure:
+                    Number(
+                        getValue("tenure")
+                    ),
+
+                PhoneService:
+                    getValue("PhoneService"),
+
+                MultipleLines:
+                    getValue("MultipleLines"),
+
+                InternetService:
+                    getValue("InternetService"),
+
+                OnlineSecurity:
+                    getValue("OnlineSecurity"),
+
+                OnlineBackup:
+                    getValue("OnlineBackup"),
+
+                DeviceProtection:
+                    getValue("DeviceProtection"),
+
+                TechSupport:
+                    getValue("TechSupport"),
+
+                StreamingTV:
+                    getValue("StreamingTV"),
+
+                StreamingMovies:
+                    getValue("StreamingMovies"),
+
+                Contract:
+                    getValue("Contract"),
+
+                PaperlessBilling:
+                    getValue("PaperlessBilling"),
+
+                PaymentMethod:
+                    getValue("PaymentMethod"),
+
+                MonthlyCharges:
+                    Number(
+                        getValue("MonthlyCharges")
+                    ),
+
+                TotalCharges:
+                    Number(
+                        getValue("TotalCharges")
+                    ),
+
+                TotalServices:
+                    Number(
+                        getValue("TotalServices")
+                    )
+            };
+        }
+
+
+        async function runPrediction() {
+
+            singleError.style.display =
+                "none";
+
+            predictionResults.style.display =
+                "none";
+
+            nextButton.disabled =
+                true;
+
+            previousButton.disabled =
+                true;
+
+            nextButton.textContent =
+                "PREDICTING...";
+
+            try {
+
+                const response =
+                    await fetch(
+                        API_BASE +
+                        "/predict-single-customer",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+                            body: JSON.stringify(
+                                createPayload()
+                            )
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.detail ||
+                        "Single-customer prediction failed."
+                    );
+                }
+
+
+                document.getElementById(
+                    "resultCustomer"
+                ).textContent =
+                    data.customerid;
+
+
+                document.getElementById(
+                    "resultProbability"
+                ).textContent =
+                    (
+                        data.churn_probability *
+                        100
+                    ).toFixed(2) +
+                    "%";
+
+
+                const resultRisk =
+                    document.getElementById(
+                        "resultRisk"
+                    );
+
+                resultRisk.textContent =
+                    data.risk_level;
+
+                resultRisk.className =
+                    "prediction-value " +
+                    data.risk_level.toLowerCase();
+
+
+                document.getElementById(
+                    "resultLTV"
+                ).textContent =
+                    "₹" +
+                    Number(
+                        data.predicted_ltv
+                    ).toLocaleString(
+                        "en-IN",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    );
+
+
+                predictionResults.style.display =
+                    "block";
+
+
+                nextButton.disabled =
+                    false;
+
+                previousButton.disabled =
+                    false;
+
+                nextButton.textContent =
+                    "RUN PREDICTION";
+
+
+                predictionResults.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+            } catch (error) {
+
+                console.error(
+                    "Prediction error:",
+                    error
+                );
+
+                singleError.style.display =
+                    "block";
+
+                singleError.textContent =
+                    error.message;
+
+                nextButton.disabled =
+                    false;
+
+                previousButton.disabled =
+                    currentStep === 0;
+
+                nextButton.textContent =
+                    "RUN PREDICTION";
+            }
+
+        }
+
+
+        nextButton.addEventListener(
+            "click",
+            function () {
+
+                if (!validateCurrentStep()) {
+                    return;
+                }
+
+                if (
+                    currentStep <
+                    steps.length - 1
+                ) {
+
+                    currentStep += 1;
+
+                    showStep(
+                        currentStep
+                    );
+
+                    return;
+                }
+
+                runPrediction();
+
+            }
+        );
+
+
+        showStep(0);
+
+    </script>
+
+</body>
+
+</html>
