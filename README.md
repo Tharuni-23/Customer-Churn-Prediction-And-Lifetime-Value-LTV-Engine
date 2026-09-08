@@ -9,7 +9,9 @@
         Change Tracking &bull;
         Scheduler &bull;
         FastAPI &bull;
-        Test Console
+        Single Customer Prediction &bull;
+        Test Console &bull;
+        Metabase
     </strong>
 </p>
 
@@ -70,41 +72,60 @@ The resulting predictions are then written back to Neon PostgreSQL.
 <h2>Integrated Architecture</h2>
 
 <pre>
-                    TEST CONSOLE
-                          |
-                          v
-                       FastAPI
-                          |
-                          v
-               Test Data Generator
-                          |
-                          v
-                  Neon PostgreSQL
-                          |
-                          v
-                  Change Detection
-                          |
-                          v
-                     Scheduler
-                          |
-                          v
-                    Main Pipeline
-                          |
-                          v
-                    Preprocessing
-                          |
-                +---------+---------+
-                |                   |
-                v                   v
-          Churn Model          LTV Model
-                |                   |
-                +---------+---------+
-                          |
-                          v
-                  Prediction Results
-                          |
-                          v
-                  Neon PostgreSQL
+                         +-----------------------+
+                         |      TEST CONSOLE     |
+                         +-----------+-----------+
+                                     |
+                         +-----------v-----------+
+                         |       FastAPI         |
+                         +-----+-----------+-----+
+                               |           |
+                 Batch Test   |           | Single Customer
+                               |           | Prediction
+                               v           v
+                    Test Data Generator   Same Preprocessing
+                               |           |
+                               v           v
+                         +-----+-----------+-----+
+                         |   Neon PostgreSQL      |
+                         +-----------+------------+
+                                     |
+                              Changed / New Data
+                                     |
+                                     v
+                            Change Detection
+                                     |
+                                     v
+                               Scheduler
+                                     |
+                                     v
+                            Main Prediction
+                               Pipeline
+                                     |
+                              Preprocessing
+                                     |
+                         +-----------+-----------+
+                         |                       |
+                         v                       v
+                   Churn Model             LTV Model
+                         |                       |
+                         +-----------+-----------+
+                                     |
+                                     v
+                           Prediction Results
+                                     |
+                                     v
+                         +-----------+------------+
+                         |   Neon PostgreSQL      |
+                         +-----------+------------+
+                                     |
+                                     v
+                                Metabase
+                                     |
+                         +-----------+-----------+
+                         |                       |
+                         v                       v
+                  Churn Risk Dashboard    LTV Segmentation
 </pre>
 
 <hr>
@@ -521,7 +542,7 @@ for customer changes.
 <h2>FastAPI</h2>
 
 <p>
-The FastAPI test service is implemented in:
+The FastAPI service is implemented in:
 </p>
 
 <p align="center">
@@ -529,21 +550,38 @@ The FastAPI test service is implemented in:
 </p>
 
 <p>
-The main test endpoint is:
+The API supports both controlled test-data generation and
+single-customer real-time inference.
 </p>
+
+<h3>Batch Test Endpoint</h3>
 
 <pre>
 POST /generate-test-data
 </pre>
 
 <p>
-FastAPI provides the API layer between the test console and the
-test-data generator.
+Triggers the controlled test-data generator used to create database
+activity for validating the scheduled prediction workflow.
+</p>
+
+<h3>Single Customer Prediction Endpoint</h3>
+
+<pre>
+POST /predict-single-customer
+</pre>
+
+<p>
+Accepts one customer profile, validates the input, applies the same
+preprocessing package used by the integrated pipeline, runs the XGBoost
+churn and LTV models, classifies the customer into a risk level, and
+returns the prediction result. The customer record and prediction outputs
+are also written to Neon PostgreSQL.
 </p>
 
 <p>
-FastAPI does not perform the machine learning prediction itself.
-It only triggers the test-data generation process.
+This keeps single-customer inference consistent with the production
+prediction workflow instead of creating a separate model implementation.
 </p>
 
 <hr>
@@ -634,7 +672,7 @@ expected by the preprocessing and prediction pipeline.
 
 <hr>
 
-<h2>Test Console</h2>
+<h2>Test &amp; Prediction Console</h2>
 
 <p>
 The test console is located at:
@@ -645,42 +683,71 @@ The test console is located at:
 </p>
 
 <p>
-It provides a simple interface for triggering controlled test-data
-generation.
+The console provides two operational flows.
+</p>
+
+<h3>Batch Test Data</h3>
+
+<p>
+Generates controlled test activity for the integrated pipeline:
 </p>
 
 <pre>
-+--------------------------------------+
-|       TEST DATA GENERATOR            |
-|                                      |
-| Existing Updates       150           |
-| New Inserts             50           |
-| Total Changes          200           |
-|                                      |
-|      [ GENERATE TEST DATA ]          |
-|                                      |
-| Status: Ready                        |
-+--------------------------------------+
+150 existing customer updates
++
+50 new customer inserts
+=
+200 affected records
 </pre>
+
+<h3>Single Customer Prediction</h3>
+
+<p>
+Provides a guided, step-by-step form for manually entering one customer
+profile. The user enters the profile in stages covering customer details,
+tenure and phone service, subscribed services, and contract/billing.
+After submission, FastAPI runs the same preprocessing and XGBoost models
+used by the integrated pipeline and displays:
+</p>
+
+<ul>
+    <li>Churn prediction</li>
+    <li>Churn probability</li>
+    <li>Risk level</li>
+    <li>Predicted LTV</li>
+</ul>
+
+<p>
+The resulting record is saved to Neon PostgreSQL so it can also be
+retrieved by the analytics layer.
+</p>
 
 <hr>
 
-<h2>Test Console Architecture</h2>
+<h2>Test &amp; Prediction Console Architecture</h2>
 
 <pre>
 test_console.html
         |
-        v
-POST /generate-test-data
-        |
-        v
-test_api.py
-        |
-        v
-test_data_generator.py
-        |
-        v
-Neon PostgreSQL
+        +------------------------------+
+        |                              |
+        v                              v
+POST /generate-test-data       POST /predict-single-customer
+        |                              |
+        v                              v
+test_data_generator.py       test_api.py prediction flow
+        |                              |
+        |                       preprocessing.py
+        |                              |
+        |                    +---------+---------+
+        |                    |                   |
+        |                    v                   v
+        |             XGBoost Churn       XGBoost LTV
+        |                    |                   |
+        +--------------------+-------------------+
+                             |
+                             v
+                      Neon PostgreSQL
 </pre>
 
 <p>
@@ -879,12 +946,12 @@ TEST-GEN-0003  Yes      0.607105             1020.69
 
 <tr>
     <td><code>test_api.py</code></td>
-    <td>FastAPI test-data endpoint</td>
+    <td>FastAPI batch test and single-customer prediction endpoints</td>
 </tr>
 
 <tr>
     <td><code>customer-interface/test_console.html</code></td>
-    <td>Test-data generation interface</td>
+    <td>Batch test console and guided single-customer prediction interface</td>
 </tr>
 
 </table>
@@ -1071,7 +1138,17 @@ Neon PostgreSQL
 </tr>
 
 <tr>
-    <td>FastAPI test endpoint</td>
+    <td>FastAPI test-data endpoint</td>
+    <td>Implemented</td>
+</tr>
+
+<tr>
+    <td>Single-customer prediction endpoint</td>
+    <td>Implemented</td>
+</tr>
+
+<tr>
+    <td>Single-customer input validation</td>
     <td>Implemented</td>
 </tr>
 
@@ -1085,7 +1162,49 @@ Neon PostgreSQL
     <td>Implemented</td>
 </tr>
 
+<tr>
+    <td>Metabase connected to Neon PostgreSQL</td>
+    <td>Implemented</td>
+</tr>
+
+<tr>
+    <td>Global churn-risk dashboard</td>
+    <td>In progress</td>
+</tr>
+
+<tr>
+    <td>LTV segmentation dashboard</td>
+    <td>Planned / in progress</td>
+</tr>
+
 </table>
+
+<hr>
+
+<h2>Analytics &amp; BI Layer</h2>
+
+<p>
+Metabase is connected to the Neon PostgreSQL database and is being used
+as the business-intelligence layer for manager-facing analytics. The BI
+dashboards are being built directly from the prediction results stored in
+the customer database.
+</p>
+
+<h3>Global Churn Risk Dashboard</h3>
+
+<p>
+The dashboard focuses on customer base health, churn rate, high-risk
+customers, churn distribution, and churn segmentation by contract,
+tenure, internet service, payment method, and monthly charges.
+</p>
+
+<h3>LTV Segmentation Dashboard</h3>
+
+<p>
+The value dashboard focuses on predicted customer lifetime value, LTV
+segments, risk versus LTV relationships, revenue exposure, and
+high-risk / high-value customers.
+</p>
 
 <hr>
 
@@ -1116,11 +1235,15 @@ Churn + LTV Models
        |
        v
 Prediction Results
+       |
+       v
+   Metabase BI
 </pre>
 
 <p>
 This will allow customer actions performed through the portal to update
-the backend database and participate in the prediction workflow.
+the backend database and participate in the prediction workflow while
+keeping Metabase as the manager analytics layer.
 </p>
 
 <hr>
@@ -1171,10 +1294,19 @@ python scheduler.py
 </div>
 ## Current Development
 
-Dashboard integration and customer analytics features are under development.✅ Dashboard section structure
-✅ API connection/status indicator
-✅ Refresh button
-✅ KPI cards
-✅ Churn-risk / LTV analytics sections
-✅ Customer search/details
-✅ Priority-customer section
+The integration pipeline and BI layer are actively being finalized.
+
+✅ Neon PostgreSQL integration
+✅ Change tracking and five-minute scheduler
+✅ Churn prediction pipeline
+✅ LTV prediction pipeline
+✅ FastAPI batch test-data endpoint
+✅ FastAPI single-customer prediction endpoint
+✅ Guided single-customer input console
+✅ Single-customer input validation
+✅ Metabase connected to Neon PostgreSQL
+✅ Customer Churn Risk Dashboard foundation
+⏳ Final dashboard filter wiring and visual polish
+⏳ LTV Segmentation Dashboard
+⏳ Docker deployment
+⏳ Final technical documentation
