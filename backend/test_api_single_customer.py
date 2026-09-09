@@ -1,5 +1,5 @@
 # ============================================================
-# test_api.py
+# backend/test_api_single_customer.py
 #
 # PURPOSE
 # ------------------------------------------------------------
@@ -33,22 +33,23 @@ import xgboost as xgb
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
 from sqlalchemy import text
 
-import database as db
-import preprocessing
-import test_data_generator
+# ============================================================
+# PROJECT IMPORTS
+# ============================================================
 
+from pipeline import database as db
+from preprocessing import preprocessing
+from testing import test_data_generator
 
 # ============================================================
 # FILE PATHS
 # ============================================================
 
-PREPROCESSING_PACKAGE_PATH = "preprocessing_package.pkl"
-CHURN_MODEL_PATH = "xgboost_model.json"
-LTV_MODEL_PATH = "ltv_model.json"
-
+PREPROCESSING_PACKAGE_PATH = "preprocessing/preprocessing_package.pkl"
+CHURN_MODEL_PATH = "models/xgboost_model.json"
+LTV_MODEL_PATH = "models/ltv_model.json"
 
 # ============================================================
 # FASTAPI APPLICATION
@@ -70,7 +71,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # ============================================================
 # SINGLE CUSTOMER REQUEST MODEL
@@ -114,6 +114,7 @@ class SingleCustomerRequest(BaseModel):
 
 @app.get("/")
 def root() -> Dict[str, str]:
+
     return {
         "status": "running",
         "service": "Customer Churn + LTV Test API",
@@ -128,9 +129,11 @@ def root() -> Dict[str, str]:
 def health() -> Dict[str, Any]:
 
     try:
+
         engine = db.get_engine()
 
         with engine.connect() as connection:
+
             connection.execute(
                 text("SELECT 1")
             )
@@ -141,6 +144,7 @@ def health() -> Dict[str, Any]:
         }
 
     except Exception as exc:
+
         return {
             "status": "unhealthy",
             "database": "disconnected",
@@ -156,6 +160,7 @@ def health() -> Dict[str, Any]:
 def generate_test_data() -> Dict[str, Any]:
 
     try:
+
         result = (
             test_data_generator
             .generate_test_data()
@@ -215,36 +220,42 @@ def validate_single_customer(
 ) -> None:
 
     if not request.customerID.strip():
+
         raise HTTPException(
             status_code=400,
             detail="Customer ID cannot be empty.",
         )
 
     if request.tenure < 0 or request.tenure > 72:
+
         raise HTTPException(
             status_code=400,
             detail="Tenure must be between 0 and 72 months.",
         )
 
     if request.SeniorCitizen not in (0, 1):
+
         raise HTTPException(
             status_code=400,
             detail="SeniorCitizen must be 0 or 1.",
         )
 
     if request.MonthlyCharges < 0:
+
         raise HTTPException(
             status_code=400,
             detail="Monthly charges cannot be negative.",
         )
 
     if request.TotalCharges < 0:
+
         raise HTTPException(
             status_code=400,
             detail="Total charges cannot be negative.",
         )
 
     if request.TotalServices < 0 or request.TotalServices > 7:
+
         raise HTTPException(
             status_code=400,
             detail="Total services must be between 0 and 7.",
@@ -355,6 +366,7 @@ def save_single_customer(
     )
 
     with engine.begin() as connection:
+
         connection.execute(
             sql,
             payload,
@@ -389,6 +401,7 @@ def save_prediction(
     )
 
     with engine.begin() as connection:
+
         connection.execute(
             sql,
             {
@@ -413,9 +426,7 @@ def predict_single_customer(
     # 1. Validate input
     # --------------------------------------------------------
 
-    validate_single_customer(
-        request
-    )
+    validate_single_customer(request)
 
     try:
 
@@ -424,8 +435,11 @@ def predict_single_customer(
         # ----------------------------------------------------
 
         if hasattr(request, "model_dump"):
+
             raw_data = request.model_dump()
+
         else:
+
             raw_data = request.dict()
 
         # ----------------------------------------------------
@@ -452,7 +466,7 @@ def predict_single_customer(
         engine = db.get_engine()
 
         # ----------------------------------------------------
-        # 5. Load the SAME preprocessing package
+        # 5. Load SAME preprocessing package
         # ----------------------------------------------------
 
         package = joblib.load(
@@ -481,6 +495,7 @@ def predict_single_customer(
         )
 
         if X_input.shape[1] != expected_features:
+
             raise ValueError(
                 "Feature mismatch: "
                 f"expected {expected_features}, "
@@ -509,7 +524,7 @@ def predict_single_customer(
         )
 
         # ----------------------------------------------------
-        # 10. Convert probability to churn classification
+        # 10. Convert probability to classification
         # ----------------------------------------------------
 
         churn_prediction = (
@@ -556,33 +571,81 @@ def predict_single_customer(
             risk_level = "Low"
 
         # ----------------------------------------------------
-        # 14. Save customer input to PostgreSQL
+        # 14. Prepare database payload
         # ----------------------------------------------------
 
         database_payload = {
-            "customerid": raw_data["customerID"],
-            "gender": raw_data["gender"],
-            "seniorcitizen": raw_data["SeniorCitizen"],
-            "partner": raw_data["Partner"],
-            "dependents": raw_data["Dependents"],
-            "tenure": raw_data["tenure"],
-            "phoneservice": raw_data["PhoneService"],
-            "multiplelines": raw_data["MultipleLines"],
-            "internetservice": raw_data["InternetService"],
-            "onlinesecurity": raw_data["OnlineSecurity"],
-            "onlinebackup": raw_data["OnlineBackup"],
-            "deviceprotection": raw_data["DeviceProtection"],
-            "techsupport": raw_data["TechSupport"],
-            "streamingtv": raw_data["StreamingTV"],
-            "streamingmovies": raw_data["StreamingMovies"],
-            "contract": raw_data["Contract"],
-            "paperlessbilling": raw_data["PaperlessBilling"],
-            "paymentmethod": raw_data["PaymentMethod"],
-            "monthlycharges": raw_data["MonthlyCharges"],
-            "totalcharges": raw_data["TotalCharges"],
-            "tenuregroup": raw_data["TenureGroup"],
-            "totalservices": raw_data["TotalServices"],
+
+            "customerid":
+                raw_data["customerID"],
+
+            "gender":
+                raw_data["gender"],
+
+            "seniorcitizen":
+                raw_data["SeniorCitizen"],
+
+            "partner":
+                raw_data["Partner"],
+
+            "dependents":
+                raw_data["Dependents"],
+
+            "tenure":
+                raw_data["tenure"],
+
+            "phoneservice":
+                raw_data["PhoneService"],
+
+            "multiplelines":
+                raw_data["MultipleLines"],
+
+            "internetservice":
+                raw_data["InternetService"],
+
+            "onlinesecurity":
+                raw_data["OnlineSecurity"],
+
+            "onlinebackup":
+                raw_data["OnlineBackup"],
+
+            "deviceprotection":
+                raw_data["DeviceProtection"],
+
+            "techsupport":
+                raw_data["TechSupport"],
+
+            "streamingtv":
+                raw_data["StreamingTV"],
+
+            "streamingmovies":
+                raw_data["StreamingMovies"],
+
+            "contract":
+                raw_data["Contract"],
+
+            "paperlessbilling":
+                raw_data["PaperlessBilling"],
+
+            "paymentmethod":
+                raw_data["PaymentMethod"],
+
+            "monthlycharges":
+                raw_data["MonthlyCharges"],
+
+            "totalcharges":
+                raw_data["TotalCharges"],
+
+            "tenuregroup":
+                raw_data["TenureGroup"],
+
+            "totalservices":
+                raw_data["TotalServices"],
         }
+
+        # ----------------------------------------------------
+        # 15. Save customer
+        # ----------------------------------------------------
 
         save_single_customer(
             database_payload,
@@ -590,7 +653,7 @@ def predict_single_customer(
         )
 
         # ----------------------------------------------------
-        # 15. Save prediction to PostgreSQL
+        # 16. Save prediction
         # ----------------------------------------------------
 
         save_prediction(
@@ -602,28 +665,43 @@ def predict_single_customer(
         )
 
         # ----------------------------------------------------
-        # 16. Return structured prediction response
+        # 17. Return response
         # ----------------------------------------------------
 
         return {
+
             "success": True,
-            "customerid": request.customerID,
+
+            "customerid":
+                request.customerID,
+
             "prediction": {
-                "churn": churn_prediction,
-                "churn_probability": round(
-                    churn_probability,
-                    6,
-                ),
-                "predicted_ltv": round(
-                    predicted_ltv,
-                    2,
-                ),
-                "risk_level": risk_level,
+
+                "churn":
+                    churn_prediction,
+
+                "churn_probability":
+                    round(
+                        churn_probability,
+                        6,
+                    ),
+
+                "predicted_ltv":
+                    round(
+                        predicted_ltv,
+                        2,
+                    ),
+
+                "risk_level":
+                    risk_level,
             },
-            "saved_to_database": True,
+
+            "saved_to_database":
+                True,
         }
 
     except HTTPException:
+
         raise
 
     except Exception as exc:
@@ -643,8 +721,8 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "test_api:app",
-        host="127.0.0.1",
+        "backend.test_api_single_customer:app",
+        host="0.0.0.0",
         port=8000,
         reload=True,
     )
