@@ -595,3 +595,71 @@ td {
         padding: 20px;
     }
 }
+/* ============================================================
+   CSV DOWNLOAD BUTTON
+   ============================================================ */
+
+#downloadCsvBtn {
+    display: inline-block;
+    margin: 0 0 25px 0;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    background: #1d4ed8;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#downloadCsvBtn:hover {
+    background: #1e40af;
+}
+
+#downloadCsvBtn:active {
+    transform: translateY(1px);
+}
+/* ============================================================
+   CSV UPLOAD BUTTON POLISH
+   ============================================================ */
+
+#uploadCsvBtn {
+    min-width: 150px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    background: #1d4ed8;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#uploadCsvBtn:hover {
+    background: #1e40af;
+}
+
+#uploadCsvBtn:active {
+    transform: translateY(1px);
+}
+
+#uploadCsvBtn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+/* ============================================================
+   CSV SECTION POLISH
+   ============================================================ */
+
+.csv-upload-section h2,
+.csv-results-section h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.csv-results-section h3 {
+    color: #1e293b;
+}

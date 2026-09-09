@@ -1,13 +1,16 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import text
 import numpy as np
+import io
 
 from . import database as db
 from .prediction_pipeline import predict_customer
 
-
+# Stores the latest uploaded CSV prediction results
+# for download from the Manager Dashboard.
+latest_prediction_csv = None
 # ============================================================
 # JSON SAFE CONVERSION
 # ============================================================
@@ -520,9 +523,8 @@ def dashboard_top_risk():
 # ============================================================
 
 @app.post("/dashboard/upload-csv")
-async def upload_csv(
-    file: UploadFile = File(...)
-):
+async def upload_csv(file: UploadFile = File(...)):
+    global latest_prediction_csv
 
     try:
 
@@ -691,17 +693,27 @@ async def upload_csv(
 
 
         # ----------------------------------------------------
-        # 14. Prepare dashboard results
+        # 14. Prepare complete CSV for download
+        # ----------------------------------------------------
+
+        # Keep the complete prediction results available
+        # for the Download Results button.
+        latest_prediction_csv = results_df.to_csv(
+            index=False
+        ).encode("utf-8")
+
+
+        # ----------------------------------------------------
+        # 15. Prepare dashboard results
         # ----------------------------------------------------
 
         # Return only the first 100 rows to the dashboard.
-        # The complete CSV is still processed for the summary.
+        # The complete CSV is still available for download.
         display_df = results_df.head(100)
 
         results = display_df.to_dict(
             orient="records"
         )
-
         # ----------------------------------------------------
         # 15. Calculate summary values
         # ----------------------------------------------------
@@ -803,3 +815,26 @@ async def upload_csv(
             status_code=500,
             detail=f"CSV prediction failed: {str(e)}"
         )
+# ============================================================
+# DOWNLOAD CSV PREDICTION RESULTS
+# ============================================================
+
+@app.get("/dashboard/download-csv")
+async def download_csv():
+
+    global latest_prediction_csv
+
+    if latest_prediction_csv is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No CSV prediction results available. Upload and process a CSV first."
+        )
+
+    return StreamingResponse(
+        io.BytesIO(latest_prediction_csv),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition":
+                "attachment; filename=prediction_results.csv"
+        }
+    )

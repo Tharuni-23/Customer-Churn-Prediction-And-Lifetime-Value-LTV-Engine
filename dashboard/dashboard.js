@@ -841,3 +841,12 @@ async function uploadCSV() {
         uploadButton.textContent = "Process CSV";
     }
 }
+// ============================================================
+// DOWNLOAD CSV PREDICTION RESULTS
+// ============================================================
+
+function downloadCSV() {
+
+    window.location.href =
+        `${API_URL}/dashboard/download-csv`;
+}
