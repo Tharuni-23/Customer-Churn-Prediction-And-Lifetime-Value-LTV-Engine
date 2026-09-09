@@ -1,0 +1,26 @@
+services:
+  churn-pipeline:
+    build: .
+    container_name: churn-ltv-pipeline
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: python main.py
+
+  scheduler:
+    build: .
+    container_name: churn-ltv-scheduler
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: python scheduler.py
+
+  api:
+    build: .
+    container_name: churn-ltv-api
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    command: uvicorn test_api_single_customer:app --host 0.0.0.0 --port 8000
