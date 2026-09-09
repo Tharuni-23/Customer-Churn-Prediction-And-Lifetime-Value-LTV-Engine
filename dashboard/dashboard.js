@@ -649,3 +649,195 @@ document
 // ============================================================
 
 loadDashboard();
+// ============================================================
+// CSV UPLOAD AND PREDICTION
+// ============================================================
+
+async function uploadCSV() {
+
+    const fileInput = document.getElementById("csvFile");
+    const uploadButton = document.getElementById("uploadCsvBtn");
+    const status = document.getElementById("uploadStatus");
+
+    if (!fileInput.files.length) {
+
+        status.textContent = "Please select a CSV file first.";
+        return;
+    }
+
+    const file = fileInput.files[0];
+
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+
+        status.textContent = "Please select a valid CSV file.";
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    uploadButton.disabled = true;
+    uploadButton.textContent = "Processing...";
+
+    status.textContent =
+        "Uploading CSV and generating predictions...";
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/dashboard/upload-csv`,
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail || "CSV processing failed"
+            );
+        }
+
+        // ----------------------------------------------------
+        // Display summary
+        // ----------------------------------------------------
+
+        document.getElementById(
+            "csvSummarySection"
+        ).style.display = "block";
+
+        document.getElementById(
+            "csvTotalCustomers"
+        ).textContent = data.total_customers;
+
+        document.getElementById(
+            "csvChurned"
+        ).textContent = data.predicted_churn;
+
+        document.getElementById(
+            "csvRetained"
+        ).textContent = data.predicted_retained;
+
+        document.getElementById(
+            "csvHighRisk"
+        ).textContent = data.high_risk_customers;
+
+        document.getElementById(
+            "csvMediumRisk"
+        ).textContent = data.medium_risk_customers;
+
+        document.getElementById(
+            "csvLowRisk"
+        ).textContent = data.low_risk_customers;
+
+        document.getElementById(
+            "csvAvgLtv"
+        ).textContent =
+            `₹${Number(
+                data.average_predicted_ltv
+            ).toFixed(2)}`;
+
+
+        // ----------------------------------------------------
+        // Display prediction table
+        // ----------------------------------------------------
+
+        const tbody = document.getElementById(
+            "csvResultsBody"
+        );
+
+        tbody.innerHTML = "";
+
+        data.results.forEach(customer => {
+
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>
+                    ${customer.customerID ?? "-"}
+                </td>
+
+                <td>
+                    ${customer.Contract ?? "-"}
+                </td>
+
+                <td>
+                    ${customer.tenure ?? "-"}
+                </td>
+
+                <td>
+                    ₹${Number(
+                        customer.MonthlyCharges || 0
+                    ).toFixed(2)}
+                </td>
+
+                <td>
+                    ${customer.predicted_churn ?? "-"}
+                </td>
+
+                <td>
+                    ${(
+                        Number(
+                            customer.churn_probability
+                        ) * 100
+                    ).toFixed(2)}%
+                </td>
+
+                <td>
+                    ₹${Number(
+                        customer.predicted_ltv || 0
+                    ).toFixed(2)}
+                </td>
+
+                <td>
+                    ${customer.risk_level ?? "-"}
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        });
+
+
+        // ----------------------------------------------------
+        // Display information
+        // ----------------------------------------------------
+
+        document.getElementById(
+            "csvDisplayedInfo"
+        ).textContent =
+            `Showing ${data.displayed_customers ?? data.results.length} ` +
+            `of ${data.total_customers} customers from ` +
+            `${data.filename}.`;
+
+
+        status.textContent =
+            "CSV processed successfully.";
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "CSV upload error:",
+            error
+        );
+
+        status.textContent =
+            `Error: ${error.message}`;
+
+        document.getElementById(
+            "csvSummarySection"
+        ).style.display = "none";
+
+    }
+
+    finally {
+
+        uploadButton.disabled = false;
+        uploadButton.textContent = "Process CSV";
+    }
+}

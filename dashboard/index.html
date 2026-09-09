@@ -73,7 +73,7 @@
 
 
         <!-- ========================================================
-             RISK SUMMARY
+             CHURN RISK OVERVIEW
              ======================================================== -->
 
         <section class="section">
@@ -114,10 +114,200 @@
                 <h2>Risk Distribution</h2>
 
                 <div class="chart-container">
+
                     <canvas id="riskChart"></canvas>
+
                 </div>
 
             </div>
+
+        </section>
+
+
+        <!-- ========================================================
+             CSV UPLOAD
+             ======================================================== -->
+
+        <section class="csv-upload-section">
+
+            <h2>Upload Customer CSV</h2>
+
+            <p class="section-description">
+                Upload a customer CSV file to generate churn and
+                lifetime value predictions.
+            </p>
+
+            <div class="csv-upload-box">
+
+                <input
+                    type="file"
+                    id="csvFile"
+                    accept=".csv"
+                >
+
+                <button
+                    id="uploadCsvBtn"
+                    onclick="uploadCSV()"
+                >
+                    Process CSV
+                </button>
+
+            </div>
+
+            <p
+                id="uploadStatus"
+                class="upload-status"
+            ></p>
+
+        </section>
+
+
+        <!-- ========================================================
+             UPLOADED CSV RESULTS
+             ======================================================== -->
+
+        <section
+            id="csvSummarySection"
+            class="csv-results-section"
+            style="display: none;"
+        >
+
+            <h2>Uploaded CSV Results</h2>
+
+
+            <!-- ====================================================
+                 CSV SUMMARY CARDS
+                 ==================================================== -->
+
+            <div class="csv-summary-cards">
+
+                <div class="csv-summary-card">
+
+                    <span>Total Customers</span>
+
+                    <strong id="csvTotalCustomers">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="csv-summary-card">
+
+                    <span>Predicted Churn</span>
+
+                    <strong id="csvChurned">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="csv-summary-card">
+
+                    <span>Retained</span>
+
+                    <strong id="csvRetained">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="csv-summary-card">
+
+                    <span>High Risk</span>
+
+                    <strong id="csvHighRisk">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="csv-summary-card">
+
+                    <span>Medium Risk</span>
+
+                    <strong id="csvMediumRisk">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="csv-summary-card">
+
+                    <span>Low Risk</span>
+
+                    <strong id="csvLowRisk">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="csv-summary-card">
+
+                    <span>Average Predicted LTV</span>
+
+                    <strong id="csvAvgLtv">
+                        ₹0.00
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- ====================================================
+                 CSV PREDICTION RESULTS
+                 ==================================================== -->
+
+            <h3>Prediction Results</h3>
+
+            <div class="table-wrapper">
+
+                <table class="customer-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Customer ID</th>
+
+                            <th>Contract</th>
+
+                            <th>Tenure</th>
+
+                            <th>Monthly Charges</th>
+
+                            <th>Churn</th>
+
+                            <th>Probability</th>
+
+                            <th>Predicted LTV</th>
+
+                            <th>Risk</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="csvResultsBody">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <p
+                id="csvDisplayedInfo"
+                class="upload-status"
+            ></p>
 
         </section>
 
@@ -137,18 +327,28 @@
                     <thead>
 
                         <tr>
+
                             <th>Customer ID</th>
+
                             <th>Contract</th>
+
                             <th>Tenure</th>
+
                             <th>Monthly Charges</th>
+
                             <th>Risk</th>
+
                             <th>Probability</th>
+
                             <th>Predicted LTV</th>
+
                         </tr>
 
                     </thead>
 
+
                     <tbody id="riskTable">
+
                     </tbody>
 
                 </table>
@@ -180,6 +380,7 @@
 
             </div>
 
+
             <div
                 id="customerDetails"
                 class="customer-details"
@@ -203,19 +404,30 @@
                     <thead>
 
                         <tr>
+
                             <th>Customer ID</th>
+
                             <th>Contract</th>
+
                             <th>Tenure</th>
+
                             <th>Monthly Charges</th>
+
                             <th>Actual Churn</th>
+
                             <th>Predicted Churn</th>
+
                             <th>Probability</th>
+
                             <th>LTV</th>
+
                         </tr>
 
                     </thead>
 
+
                     <tbody id="customerTable">
+
                     </tbody>
 
                 </table>
@@ -229,7 +441,10 @@
              ERROR MESSAGE
              ======================================================== -->
 
-        <p id="errorMessage" class="error"></p>
+        <p
+            id="errorMessage"
+            class="error"
+        ></p>
 
     </main>
 
