@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TelcoConnect - Change Plan</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <div class="app-layout">
+
+
+        <!-- =====================================================
+             SIDEBAR
+        ====================================================== -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                TELCOCONNECT
+            </div>
+
+
+            <nav class="nav">
+
+                <a
+                    href="dashboard.html"
+                >
+                    ⌂
+                    <span>
+                        Dashboard
+                    </span>
+                </a>
+
+
+                <a
+                    href="profile.html"
+                >
+                    👤
+                    <span>
+                        My Profile
+                    </span>
+                </a>
+
+
+                <a
+                    href="plan.html"
+                >
+                    📦
+                    <span>
+                        My Plan
+                    </span>
+                </a>
+
+
+                <a
+                    href="change-plan.html"
+                    class="active"
+                >
+                    🔄
+                    <span>
+                        Change Plan
+                    </span>
+                </a>
+
+
+                <a
+                    href="billing.html"
+                >
+                    💳
+                    <span>
+                        Billing &amp; Payments
+                    </span>
+                </a>
+
+
+                <a
+                    href="payments.html"
+                >
+                    🧾
+                    <span>
+                        Payment History
+                    </span>
+                </a>
+
+
+                <a
+                    href="support.html"
+                >
+                    💬
+                    <span>
+                        Support
+                    </span>
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <button
+                    class="logout"
+                    id="logoutButton"
+                    type="button"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =====================================================
+             MAIN CONTENT
+        ====================================================== -->
+
+        <main class="main">
+
+
+            <!-- =================================================
+                 TOP BAR
+            ================================================== -->
+
+            <header class="topbar">
+
+                <div>
+
+                    <div class="kicker">
+                        CUSTOMER PORTAL
+                    </div>
+
+                    <h1>
+                        Change Plan
+                    </h1>
+
+                </div>
+
+
+                <div class="top-right">
+
+                    <!-- Theme -->
+                    <button
+                        class="icon-btn"
+                        id="themeToggle"
+                        type="button"
+                        aria-label="Toggle theme"
+                    >
+                        🌙
+                    </button>
+
+
+                    <!-- Customer -->
+                    <div class="profile-mini">
+
+                        <div
+                            class="avatar"
+                            data-customer-name
+                        >
+                            C
+                        </div>
+
+
+                        <div>
+
+                            <strong
+                                data-customer-name
+                            >
+                                Customer
+                            </strong>
+
+                            <span
+                                data-customer-id
+                            >
+                                CUST-XXXXX
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================================
+                 PAGE INTRO
+            ================================================== -->
+
+            <section class="hero">
+
+                <div class="accent">
+                    SUBSCRIPTION OPTIONS
+                </div>
+
+
+                <h2>
+                    Choose a Plan
+                </h2>
+
+
+                <p>
+                    Select a subscription that best
+                    fits your needs.
+                </p>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PLAN OPTIONS
+            ================================================== -->
+
+            <section class="grid-3">
+
+
+                <!-- 1 MONTH -->
+
+                <div class="plan-card">
+
+                    <h4>
+                        1 Month
+                    </h4>
+
+
+                    <div class="price">
+                        ₹499
+                    </div>
+
+
+                    <div class="muted">
+                        Monthly subscription
+                    </div>
+
+
+                    <ul>
+
+                        <li>
+                            Standard service
+                        </li>
+
+                        <li>
+                            Flexible renewal
+                        </li>
+
+                    </ul>
+
+
+                    <button
+                        class="btn btn-primary plan-select"
+                        type="button"
+                        data-plan="1 Month"
+                    >
+                        Choose Plan
+                    </button>
+
+                </div>
+
+
+
+                <!-- 3 MONTHS -->
+
+                <div class="plan-card">
+
+                    <h4>
+                        3 Months
+                    </h4>
+
+
+                    <div class="price">
+                        ₹1,347
+                    </div>
+
+
+                    <div class="muted">
+                        Short-term value
+                    </div>
+
+
+                    <ul>
+
+                        <li>
+                            Standard service
+                        </li>
+
+                        <li>
+                            Longer validity
+                        </li>
+
+                    </ul>
+
+
+                    <button
+                        class="btn btn-primary plan-select"
+                        type="button"
+                        data-plan="3 Months"
+                    >
+                        Choose Plan
+                    </button>
+
+                </div>
+
+
+
+                <!-- 6 MONTHS -->
+
+                <div class="plan-card">
+
+                    <h4>
+                        6 Months
+                    </h4>
+
+
+                    <div class="price">
+                        ₹2,694
+                    </div>
+
+
+                    <div class="muted">
+                        Popular choice
+                    </div>
+
+
+                    <ul>
+
+                        <li>
+                            Standard service
+                        </li>
+
+                        <li>
+                            Longer validity
+                        </li>
+
+                    </ul>
+
+
+                    <button
+                        class="btn btn-primary plan-select"
+                        type="button"
+                        data-plan="6 Months"
+                    >
+                        Choose Plan
+                    </button>
+
+                </div>
+
+
+
+                <!-- 12 MONTHS -->
+
+                <div class="plan-card">
+
+                    <h4>
+                        12 Months
+                    </h4>
+
+
+                    <div class="price">
+                        ₹5,388
+                    </div>
+
+
+                    <div class="muted">
+                        Best long-term value
+                    </div>
+
+
+                    <ul>
+
+                        <li>
+                            Standard service
+                        </li>
+
+                        <li>
+                            Maximum convenience
+                        </li>
+
+                    </ul>
+
+
+                    <button
+                        class="btn btn-primary plan-select"
+                        type="button"
+                        data-plan="12 Months"
+                    >
+                        Choose Plan
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PLAN SELECTION MESSAGE
+            ================================================== -->
+
+            <div
+                id="planMessage"
+                class="panel"
+                style="
+                    display: none;
+                    margin-top: 16px;
+                "
+            >
+
+            </div>
+
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+
+            <div class="footer">
+
+                <span>
+                    TELCOCONNECT Customer Portal
+                </span>
+
+
+                <span>
+                    Need help?
+                    Contact Support
+                </span>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+
+    <!-- =========================================================
+         PAGE JAVASCRIPT
+    ========================================================= -->
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+
+                /*
+                 * ------------------------------------------------
+                 * PLAN SELECTION
+                 * ------------------------------------------------
+                 */
+
+                const message =
+                    document.getElementById(
+                        "planMessage"
+                    );
+
+
+                const planButtons =
+                    document.querySelectorAll(
+                        ".plan-select"
+                    );
+
+
+                planButtons.forEach(
+                    function (button) {
+
+                        button.addEventListener(
+                            "click",
+                            function () {
+
+
+                                const selectedPlan =
+                                    button.dataset.plan;
+
+
+                                message.style.display =
+                                    "block";
+
+
+                                message.innerHTML = `
+
+                                    <strong>
+                                        ${selectedPlan} selected.
+                                    </strong>
+
+                                    <div
+                                        class="muted"
+                                        style="margin-top:5px"
+                                    >
+                                        Your plan selection is ready.
+                                        The PostgreSQL/FastAPI update
+                                        will be connected later.
+
+                                    </div>
+
+                                `;
+
+                            }
+                        );
+
+                    }
+                );
+
+            }
+
+        );
+
+    </script>
+
+
+    <!-- =========================================================
+         SHARED JAVASCRIPT
+    ========================================================= -->
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>

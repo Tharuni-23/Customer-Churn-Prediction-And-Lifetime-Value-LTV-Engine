@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TelcoConnect - Support</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         APPLICATION LAYOUT
+    ====================================================== -->
+
+    <div class="app-layout">
+
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                TELCOCONNECT
+            </div>
+
+
+            <nav class="nav">
+
+                <!-- Dashboard -->
+                <a
+                    href="dashboard.html"
+                >
+                    ⌂
+                    <span>
+                        Dashboard
+                    </span>
+                </a>
+
+
+                <!-- My Profile -->
+                <a
+                    href="profile.html"
+                >
+                    👤
+                    <span>
+                        My Profile
+                    </span>
+                </a>
+
+
+                <!-- My Plan -->
+                <a
+                    href="plan.html"
+                >
+                    📦
+                    <span>
+                        My Plan
+                    </span>
+                </a>
+
+
+                <!-- Change Plan -->
+                <a
+                    href="change-plan.html"
+                >
+                    🔄
+                    <span>
+                        Change Plan
+                    </span>
+                </a>
+
+
+                <!-- Billing -->
+                <a
+                    href="billing.html"
+                >
+                    💳
+                    <span>
+                        Billing &amp; Payments
+                    </span>
+                </a>
+
+
+                <!-- Payment History -->
+                <a
+                    href="payments.html"
+                >
+                    🧾
+                    <span>
+                        Payment History
+                    </span>
+                </a>
+
+
+                <!-- Support -->
+                <a
+                    href="support.html"
+                    class="active"
+                >
+                    💬
+                    <span>
+                        Support
+                    </span>
+                </a>
+
+            </nav>
+
+
+            <!-- Logout -->
+
+            <div class="sidebar-bottom">
+
+                <button
+                    class="logout"
+                    id="logoutButton"
+                    type="button"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =================================================
+             MAIN CONTENT
+        ================================================== -->
+
+        <main class="main">
+
+
+            <!-- =================================================
+                 TOP BAR
+            ================================================== -->
+
+            <header class="topbar">
+
+                <div>
+
+                    <div class="kicker">
+                        CUSTOMER PORTAL
+                    </div>
+
+                    <h1>
+                        Support
+                    </h1>
+
+                </div>
+
+
+                <div class="top-right">
+
+                    <!-- Theme -->
+
+                    <button
+                        class="icon-btn"
+                        id="themeToggle"
+                        type="button"
+                        aria-label="Toggle theme"
+                    >
+                        🌙
+                    </button>
+
+
+                    <!-- Customer -->
+
+                    <div class="profile-mini">
+
+                        <div
+                            class="avatar"
+                            data-customer-name
+                        >
+                            C
+                        </div>
+
+
+                        <div>
+
+                            <strong
+                                data-customer-name
+                            >
+                                Customer
+                            </strong>
+
+
+                            <span
+                                data-customer-id
+                            >
+                                CUST-XXXXX
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================================
+                 PAGE INTRO
+            ================================================== -->
+
+            <section class="hero">
+
+                <div class="accent">
+                    HELP CENTER
+                </div>
+
+
+                <h2>
+                    Support
+                </h2>
+
+
+                <p>
+                    Find answers or create a support request.
+                </p>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 SUPPORT OPTIONS
+            ================================================== -->
+
+            <section class="grid-2">
+
+
+                <!-- FAQ -->
+
+                <div class="card">
+
+                    <div class="label">
+                        FAQ
+                    </div>
+
+
+                    <div
+                        class="value"
+                        style="font-size:20px"
+                    >
+                        Common Questions
+                    </div>
+
+
+                    <div class="muted">
+                        Browse frequently asked questions
+                        and find quick answers.
+                    </div>
+
+
+                    <button
+                        class="btn btn-secondary"
+                        id="faqButton"
+                        type="button"
+                        style="margin-top:14px"
+                    >
+                        View FAQs
+                    </button>
+
+                </div>
+
+
+
+                <!-- CREATE TICKET -->
+
+                <div class="card">
+
+                    <div class="label">
+                        SUPPORT
+                    </div>
+
+
+                    <div
+                        class="value"
+                        style="font-size:20px"
+                    >
+                        Create Ticket
+                    </div>
+
+
+                    <div class="muted">
+                        Tell us what you need help with.
+                    </div>
+
+
+                    <button
+                        class="btn btn-primary"
+                        id="createTicketButton"
+                        type="button"
+                        style="margin-top:14px"
+                    >
+                        Create Ticket
+                    </button>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 CREATE SUPPORT TICKET
+            ================================================== -->
+
+            <section
+                class="panel"
+                id="ticketBox"
+            >
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <div class="kicker">
+                            NEW REQUEST
+                        </div>
+
+                        <h3>
+                            Raise a Support Ticket
+                        </h3>
+
+                    </div>
+
+
+                    <button
+                        class="btn btn-primary"
+                        id="submitTicket"
+                        type="button"
+                    >
+                        Submit Ticket
+                    </button>
+
+                </div>
+
+
+                <div class="form-grid">
+
+
+                    <!-- CATEGORY -->
+
+                    <div class="field">
+
+                        <label for="ticketCategory">
+                            Category
+                        </label>
+
+                        <select
+                            id="ticketCategory"
+                        >
+
+                            <option value="Billing">
+                                Billing
+                            </option>
+
+                            <option value="Subscription">
+                                Subscription
+                            </option>
+
+                            <option value="Technical">
+                                Technical
+                            </option>
+
+                            <option value="Account">
+                                Account
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- SUBJECT -->
+
+                    <div class="field">
+
+                        <label for="ticketSubject">
+                            Subject
+                        </label>
+
+                        <input
+                            id="ticketSubject"
+                            type="text"
+                            placeholder="Enter subject"
+                        >
+
+                    </div>
+
+
+
+                    <!-- MESSAGE -->
+
+                    <div class="field full">
+
+                        <label for="ticketMessage">
+                            Message
+                        </label>
+
+                        <textarea
+                            id="ticketMessage"
+                            placeholder="Describe your issue"
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 TICKET HISTORY
+            ================================================== -->
+
+            <section class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <div class="kicker">
+                            TICKETS
+                        </div>
+
+                        <h3>
+                            Ticket History
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="ticketHistory"
+                    class="empty"
+                >
+                    No support tickets yet.
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+
+            <div class="footer">
+
+                <span>
+                    TELCOCONNECT Customer Portal
+                </span>
+
+
+                <span>
+                    Need help?
+                    Contact Support
+                </span>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         SUPPORT PAGE JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+
+                /*
+                 * =================================================
+                 * FAQ BUTTON
+                 * =================================================
+                 */
+
+                const faqButton =
+                    document.getElementById(
+                        "faqButton"
+                    );
+
+
+                faqButton.addEventListener(
+                    "click",
+                    function () {
+
+                        alert(
+                            "FAQ section will be connected later."
+                        );
+
+                    }
+                );
+
+
+
+                /*
+                 * =================================================
+                 * CREATE TICKET BUTTON
+                 * =================================================
+                 */
+
+                const createTicketButton =
+                    document.getElementById(
+                        "createTicketButton"
+                    );
+
+
+                createTicketButton.addEventListener(
+                    "click",
+                    function () {
+
+                        document
+                            .getElementById(
+                                "ticketBox"
+                            )
+                            .scrollIntoView({
+                                behavior: "smooth"
+                            });
+
+                    }
+                );
+
+
+
+                /*
+                 * =================================================
+                 * SUBMIT TICKET
+                 * =================================================
+                 */
+
+                const submitTicket =
+                    document.getElementById(
+                        "submitTicket"
+                    );
+
+
+                submitTicket.addEventListener(
+                    "click",
+                    function () {
+
+
+                        const category =
+                            document.getElementById(
+                                "ticketCategory"
+                            ).value;
+
+
+                        const subject =
+                            document.getElementById(
+                                "ticketSubject"
+                            ).value.trim();
+
+
+                        const message =
+                            document.getElementById(
+                                "ticketMessage"
+                            ).value.trim();
+
+
+                        /*
+                         * Validation
+                         */
+
+                        if (
+                            !subject ||
+                            !message
+                        ) {
+
+                            alert(
+                                "Please enter a subject and message."
+                            );
+
+                            return;
+
+                        }
+
+
+                        /*
+                         * Temporary frontend response
+                         */
+
+                        alert(
+                            "Support ticket created successfully.\n\n" +
+                            "Category: " +
+                            category +
+                            "\nSubject: " +
+                            subject
+                        );
+
+
+                        /*
+                         * Clear form
+                         */
+
+                        document.getElementById(
+                            "ticketSubject"
+                        ).value = "";
+
+
+                        document.getElementById(
+                            "ticketMessage"
+                        ).value = "";
+
+                    }
+                );
+
+            }
+
+        );
+
+    </script>
+
+
+
+    <!-- =====================================================
+         SHARED APPLICATION JAVASCRIPT
+    ====================================================== -->
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
