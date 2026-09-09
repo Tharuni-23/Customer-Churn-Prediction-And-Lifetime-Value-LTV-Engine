@@ -1,5 +1,9 @@
 FROM nginx:alpine
 
-COPY test_console_single_customer.html /usr/share/nginx/html/
+WORKDIR /usr/share/nginx/html
+
+COPY frontend/test_console_single_customer.html .
 
 EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
