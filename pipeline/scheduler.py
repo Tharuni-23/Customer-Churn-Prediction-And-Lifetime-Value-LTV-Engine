@@ -1,37 +1,14 @@
 # ============================================================
-# scheduler.py
+# pipeline/scheduler.py
 #
-# PURPOSE
-# ------------------------------------------------------------
-# Runs the Churn + LTV prediction pipeline every 5 minutes.
-#
-# IMPORTANT:
-# ------------------------------------------------------------
-# The scheduler now WAITs 5 minutes BEFORE the first run.
-#
-# Therefore:
-#
-#   Start scheduler
-#          ↓
-#       WAIT 5 MIN
-#          ↓
-#      Run pipeline
-#          ↓
-#       WAIT 5 MIN
-#          ↓
-#      Run pipeline
-#          ↓
-#          ...
-#
+# Runs the Churn + LTV pipeline every 5 minutes
 # ============================================================
-
 
 import time
 import traceback
-
 from datetime import datetime
 
-from main import run_pipeline
+from pipeline.main import run_pipeline
 
 
 # ============================================================
@@ -49,44 +26,23 @@ def run_scheduled_pipeline():
 
     start_time = datetime.now()
 
-
     print()
     print("=" * 70)
     print("SCHEDULED RUN")
     print("=" * 70)
-
-
-    print(
-        "Started:",
-        start_time
-    )
-
+    print("Started:", start_time)
 
     try:
-
         run_pipeline()
 
-
         print()
-        print(
-            "Pipeline run finished successfully."
-        )
-
+        print("Pipeline run finished successfully.")
 
     except Exception as error:
 
         print()
-        print(
-            "PIPELINE FAILED"
-        )
-
-
-        print(
-            "Error:",
-            error
-        )
-
-
+        print("PIPELINE FAILED")
+        print("Error:", error)
         traceback.print_exc()
 
 
@@ -100,74 +56,25 @@ def start_scheduler():
     print("=" * 70)
     print("CHURN + LTV SCHEDULER STARTED")
     print("=" * 70)
-
-
-    print(
-        "Interval: 5 minutes"
-    )
-
-
-    print(
-        "The first pipeline run will start "
-        "after 5 minutes."
-    )
-
-
-    print(
-        "Press CTRL+C to stop the scheduler."
-    )
-
-
-    # ========================================================
-    # WAIT BEFORE FIRST RUN
-    # ========================================================
+    print("Interval : 5 minutes")
+    print("First run starts after 5 minutes.")
+    print("Press CTRL+C to stop.\n")
 
     try:
 
         while True:
 
-            print()
-            print(
-                "-" * 70
-            )
+            print("-" * 70)
+            print("Waiting for next scheduled run...")
+            print("Current time:", datetime.now())
+            print("-" * 70)
 
-            print(
-                "Waiting 5 minutes "
-                "before next pipeline run..."
-            )
-
-            print(
-                "Next run:",
-                datetime.now()
-            )
-
-            print(
-                "-" * 70
-            )
-
-
-            # ------------------------------------------------
-            # WAIT 5 MINUTES
-            # ------------------------------------------------
-
-            time.sleep(
-                INTERVAL_SECONDS
-            )
-
-
-            # ------------------------------------------------
-            # RUN PIPELINE
-            # ------------------------------------------------
+            time.sleep(INTERVAL_SECONDS)
 
             run_scheduled_pipeline()
 
-
     except KeyboardInterrupt:
-
-        print()
-        print(
-            "Scheduler stopped by user."
-        )
+        print("\nScheduler stopped.")
 
 
 # ============================================================
@@ -175,17 +82,4 @@ def start_scheduler():
 # ============================================================
 
 if __name__ == "__main__":
-
-    try:
-
-        start_scheduler()
-
-
-    except Exception:
-
-        print()
-        print(
-            "SCHEDULER FAILED TO START"
-        )
-
-        traceback.print_exc()
+    start_scheduler()
