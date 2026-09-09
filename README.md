@@ -1,343 +1,138 @@
-# Customer Churn Prediction and Lifetime Value (LTV) Engine
+<div align="center">
 
-Team project developed during the Zaalima Development Pvt. Ltd. internship.
+# Customer Churn Prediction & Lifetime Value (LTV) Engine
 
-The project combines Machine Learning, PostgreSQL, FastAPI, and a Manager Dashboard to analyze customer churn risk and estimate Customer Lifetime Value (LTV).
+### An integrated machine learning system for customer churn prediction and Lifetime Value estimation
 
----
+<p>
+  <img src="https://img.shields.io/badge/Python-3.x-blue?logo=python" alt="Python">
+  <img src="https://img.shields.io/badge/XGBoost-Machine%20Learning-orange" alt="XGBoost">
+  <img src="https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-4169E1?logo=postgresql" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Neon-PostgreSQL-black" alt="Neon">
+  <img src="https://img.shields.io/badge/HTML%2FCSS%2FJS-Frontend-E34F26" alt="Frontend">
+</p>
 
-## Project Overview
-
-The system is designed to help managers identify customers who are likely to churn and understand their expected lifetime value.
-
-The main workflow is:
-
-Customer Data
-    ↓
-Data Preprocessing
-    ↓
-Feature Engineering
-    ↓
-Machine Learning Models
-    ↓
-Churn Probability + Predicted LTV
-    ↓
-PostgreSQL Database
-    ↓
-FastAPI Backend
-    ↓
-Manager Dashboard
-
-The system supports both existing database customers and CSV-based batch prediction.
+</div>
 
 ---
 
-## Key Features
+## Overview
 
-### 1. Customer Churn Prediction
+Customer Churn Prediction & Lifetime Value (LTV) Engine is a team-developed project for analyzing customer behavior and generating two important business predictions:
 
-The system predicts whether a customer is likely to churn.
+**Customer Churn Probability** and **Customer Lifetime Value (LTV)**.
 
-The churn model produces:
+The system combines machine learning, customer data processing, Neon PostgreSQL, scheduled prediction, FastAPI services, controlled test-data generation, and a customer-facing web interface.
 
-- Predicted churn (`Yes` / `No`)
-- Churn probability
-
-A probability threshold of 0.50 is used for the churn prediction.
+The repository is divided into separate branches so that machine learning development, customer portal development, and the integrated prediction system can be developed independently.
 
 ---
 
-### 2. Customer Lifetime Value (LTV) Prediction
+## Objectives
 
-The system predicts the expected Customer Lifetime Value for each customer.
+<table>
+<tr>
+<td>
 
-The dashboard provides:
+### Prediction
 
-- Individual predicted LTV
-- Average predicted LTV
-- Total predicted LTV for uploaded CSV data
+Predict the probability that a customer will churn.
 
----
+</td>
+<td>
 
-### 3. Churn Risk Classification
+### Customer Value
 
-Customers are classified into three risk levels using their churn probability:
+Estimate the expected Lifetime Value of a customer.
 
-| Probability | Risk Level |
-|-------------|------------|
-| 70% and above | High |
-| 40% to below 70% | Medium |
-| Below 40% | Low |
+</td>
+</tr>
 
-This allows managers to quickly identify customers who require attention.
+<tr>
+<td>
 
----
+### Change Detection
 
-### 4. Manager Dashboard
+Detect newly inserted and updated customer records.
 
-The Manager Dashboard provides an overview of customer and prediction information.
+</td>
+<td>
 
-The dashboard displays:
+### Automation
 
-- Total customers
-- Churned customers
-- Retained customers
-- Average monthly charges
-- Monthly revenue
-- Average predicted LTV
-- High-risk customers
-- Medium-risk customers
-- Low-risk customers
-- Number of customers with predictions
-- Risk distribution chart
-- Top at-risk customers
-- Customer search
-- Customer prediction details
+Automatically process changed records through the prediction pipeline.
 
----
+</td>
+</tr>
 
-### 5. Top At-Risk Customers
+<tr>
+<td>
 
-The dashboard displays the customers with the highest churn probabilities.
+### Database Integration
 
-The table includes:
+Store customer information and prediction results in PostgreSQL.
 
-- Customer ID
-- Contract
-- Tenure
-- Monthly Charges
-- Risk Level
-- Churn Probability
-- Predicted LTV
+</td>
+<td>
 
-This helps managers prioritize customer retention activities.
+### Customer Experience
+
+Provide a customer-facing portal for account and subscription management.
+
+</td>
+</tr>
+</table>
 
 ---
 
-### 6. Customer Search
+## Technology Stack
 
-Managers can search for an individual customer using the Customer ID.
-
-The customer details include the available customer information along with:
-
-- Predicted churn
-- Churn probability
-- Predicted LTV
-- Prediction timestamp
-
----
-
-### 7. CSV Upload and Batch Prediction
-
-The Manager Dashboard supports CSV file upload.
-
-The uploaded CSV is:
-
-1. Read by the FastAPI backend
-2. Preprocessed using the saved preprocessing package
-3. Passed through the churn model
-4. Passed through the LTV model
-5. Assigned a risk level
-6. Returned as prediction results
-
-The dashboard displays the prediction results for the uploaded customers.
-
-For large files, the dashboard displays the first 100 rows while the complete file is processed.
+| Category | Technologies |
+|---|---|
+| Programming | Python |
+| Machine Learning | Scikit-learn, XGBoost |
+| Data Processing | Pandas, NumPy |
+| Database | PostgreSQL, Neon PostgreSQL |
+| Database Access | SQLAlchemy |
+| Backend API | FastAPI |
+| Frontend | HTML5, CSS3, JavaScript |
+| Scheduling | Python Scheduler |
+| Model Storage | JSON, PKL |
 
 ---
 
-### 8. Download Prediction Results
+## System Architecture
 
-After processing an uploaded CSV, the manager can download the complete prediction results.
-
-The downloaded file contains prediction information such as:
-
-- Customer ID
-- Contract
-- Tenure
-- Monthly Charges
-- Predicted Churn
-- Churn Probability
-- Predicted LTV
-- Risk Level
-
-The downloaded file is generated as:
-
-`prediction_results.csv`
-
----
-
-## Machine Learning
-
-The project uses trained Machine Learning models for:
-
-### Churn Prediction
-
-An XGBoost classification model is used to predict customer churn probability.
-
-Model artifact:
-
-`xgboost_model.json`
-
-### LTV Prediction
-
-An XGBoost regression model is used to estimate Customer Lifetime Value.
-
-Model artifact:
-
-`ltv_model.json`
-
-### Preprocessing
-
-The saved preprocessing package is used to transform customer data into the same feature representation expected by the trained models.
-
-Artifact:
-
-`preprocessing_package.pkl`
-
----
-
-## Feature Engineering
-
-The project includes engineered customer features such as:
-
-- Tenure Group
-- Total Services
-- Mails
-
-These features are used along with the original customer attributes during prediction.
-
-The final preprocessing pipeline produces the feature representation required by the trained ML models.
-
----
-
-## Database
-
-The Manager Dashboard uses PostgreSQL for customer data and prediction storage.
-
-The main local customer table is:
-
-`customer_churn`
-
-Prediction fields include:
-
-- `predicted_churn`
-- `churn_probability`
-- `predicted_ltv`
-- `prediction_at`
-
-The original customer churn value is preserved separately from the model prediction.
-
-This prevents the historical target value from being overwritten by the prediction.
-
----
-
-## Backend
-
-The backend is implemented using FastAPI.
-
-The API provides customer data, dashboard analytics, predictions, risk analysis, and CSV processing.
-
-### Main API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | Check whether the API is running |
-| GET | `/health` | Check API/database health |
-| GET | `/dashboard/summary` | Get dashboard summary statistics |
-| GET | `/customers` | Get customer records |
-| GET | `/customers/{customer_id}` | Get an individual customer |
-| GET | `/dashboard/customers` | Get dashboard customer data |
-| GET | `/dashboard/customers/{customer_id}` | Get dashboard customer details |
-| GET | `/dashboard/risk-summary` | Get high/medium/low risk counts |
-| GET | `/dashboard/top-risk` | Get top at-risk customers |
-| POST | `/predict/{customer_id}` | Generate prediction for one customer |
-| POST | `/dashboard/upload-csv` | Upload CSV and generate predictions |
-| GET | `/dashboard/download-csv` | Download latest CSV prediction results |
-
----
-
-## Dashboard Summary
-
-The dashboard summary provides:
-
-- Total customer count
-- Churned customer count
-- Retained customer count
-- Average monthly charges
-- Total monthly revenue
-- Average predicted LTV
-
-Example values from the local Telco customer dataset include:
-
-- Total customers: 7043
-- Churned customers: 1869
-- Retained customers: 5174
-
----
-
-## Technologies Used
-
-### Programming
-
-- Python
-- HTML
-- CSS
-- JavaScript
-
-### Backend
-
-- FastAPI
-- Uvicorn
-
-### Database
-
-- PostgreSQL
-- SQLAlchemy
-- psycopg2
-
-### Machine Learning
-
-- XGBoost
-- pandas
-- NumPy
-- scikit-learn
-- joblib
-
-### Visualization
-
-- Chart.js
-
-### Version Control
-
-- Git
-- GitHub
-
----
-
-## Project Structure
+<div align="center">
 
 ```text
-Customer-Churn-Prediction-And-Lifetime-Value-LTV-Engine/
-│
-├── dashboard/
-│   ├── dashboard.js
-│   ├── index.html
-│   └── style.css
-│
-├── src/
-│   ├── api.py
-│   ├── database.py
-│   └── prediction_pipeline.py
-│
-├── sql/
-│   └── add_prediction_columns.sql
-│
-├── preprocessing.py
-├── preprocessing_package.pkl
-├── xgboost_model.json
-├── ltv_model.json
-│
-├── README.md
-├── .gitignore
-└── .env
+                         CUSTOMER / TEST INTERFACE
+                                    |
+                                    v
+                                 FastAPI
+                                    |
+                                    v
+                           Neon PostgreSQL
+                                    |
+                                    v
+                           Change Detection
+                                    |
+                                    v
+                               Scheduler
+                                    |
+                                    v
+                            Preprocessing
+                                    |
+                         +----------+----------+
+                         |                     |
+                         v                     v
+                  Churn Prediction       LTV Prediction
+                         |                     |
+                         +----------+----------+
+                                    |
+                                    v
+                           Prediction Results
+                                    |
+                                    v
+                           Neon PostgreSQL
