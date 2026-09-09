@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TelcoConnect - My Profile</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         APPLICATION LAYOUT
+    ====================================================== -->
+
+    <div class="app-layout">
+
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside class="sidebar">
+
+            <!-- Brand -->
+
+            <div class="brand">
+                TELCOCONNECT
+            </div>
+
+
+            <!-- Navigation -->
+
+            <nav class="nav">
+
+                <!-- Dashboard -->
+
+                <a
+                    href="dashboard.html"
+                >
+                    ⌂
+                    <span>
+                        Dashboard
+                    </span>
+                </a>
+
+
+                <!-- My Profile -->
+
+                <a
+                    href="profile.html"
+                    class="active"
+                >
+                    👤
+                    <span>
+                        My Profile
+                    </span>
+                </a>
+
+
+                <!-- My Plan -->
+
+                <a
+                    href="plan.html"
+                >
+                    📦
+                    <span>
+                        My Plan
+                    </span>
+                </a>
+
+
+                <!-- Change Plan -->
+
+                <a
+                    href="change-plan.html"
+                >
+                    🔄
+                    <span>
+                        Change Plan
+                    </span>
+                </a>
+
+
+                <!-- Billing -->
+
+                <a
+                    href="billing.html"
+                >
+                    💳
+                    <span>
+                        Billing &amp; Payments
+                    </span>
+                </a>
+
+
+                <!-- Payment History -->
+
+                <a
+                    href="payments.html"
+                >
+                    🧾
+                    <span>
+                        Payment History
+                    </span>
+                </a>
+
+
+                <!-- Support -->
+
+                <a
+                    href="support.html"
+                >
+                    💬
+                    <span>
+                        Support
+                    </span>
+                </a>
+
+            </nav>
+
+
+            <!-- Logout -->
+
+            <div class="sidebar-bottom">
+
+                <button
+                    class="logout"
+                    id="logoutButton"
+                    type="button"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =================================================
+             MAIN CONTENT
+        ================================================== -->
+
+        <main class="main">
+
+
+            <!-- =================================================
+                 TOP BAR
+            ================================================== -->
+
+            <header class="topbar">
+
+                <div>
+
+                    <div class="kicker">
+                        CUSTOMER PORTAL
+                    </div>
+
+                    <h1>
+                        My Profile
+                    </h1>
+
+                </div>
+
+
+                <div class="top-right">
+
+                    <!-- Theme -->
+
+                    <button
+                        class="icon-btn"
+                        id="themeToggle"
+                        type="button"
+                        aria-label="Toggle theme"
+                    >
+                        🌙
+                    </button>
+
+
+                    <!-- Customer -->
+
+                    <div class="profile-mini">
+
+                        <div
+                            class="avatar"
+                            data-customer-name
+                        >
+                            C
+                        </div>
+
+
+                        <div>
+
+                            <strong
+                                data-customer-name
+                            >
+                                Customer
+                            </strong>
+
+
+                            <span
+                                data-customer-id
+                            >
+                                CUST-XXXXX
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================================
+                 PAGE INTRO
+            ================================================== -->
+
+            <section class="hero">
+
+                <div class="accent">
+                    ACCOUNT
+                </div>
+
+
+                <h2>
+                    Your Profile
+                </h2>
+
+
+                <p>
+                    Review and update your personal
+                    information.
+                </p>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PROFILE INFORMATION
+            ================================================== -->
+
+            <section class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <div class="kicker">
+                            PROFILE INFORMATION
+                        </div>
+
+                        <h3>
+                            Personal Details
+                        </h3>
+
+                    </div>
+
+
+                    <button
+                        class="btn btn-primary"
+                        id="saveProfile"
+                        type="button"
+                    >
+                        Save Changes
+                    </button>
+
+                </div>
+
+
+
+                <div class="form-grid">
+
+
+                    <!-- Full Name -->
+
+                    <div class="field">
+
+                        <label for="profileName">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="profileName"
+                            value="Customer"
+                            placeholder="Enter your full name"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Email -->
+
+                    <div class="field">
+
+                        <label for="profileEmail">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="profileEmail"
+                            value="customer@example.com"
+                            placeholder="Enter your email"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Phone -->
+
+                    <div class="field">
+
+                        <label for="profilePhone">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="profilePhone"
+                            value="+91 98765 43210"
+                            placeholder="Enter your phone number"
+                        >
+
+                    </div>
+
+
+
+                    <!-- Customer ID -->
+
+                    <div class="field">
+
+                        <label for="profileCustomerId">
+                            Customer ID
+                        </label>
+
+                        <input
+                            type="text"
+                            id="profileCustomerId"
+                            value="CUST-XXXXX"
+                            disabled
+                        >
+
+                    </div>
+
+
+
+                    <!-- Address -->
+
+                    <div class="field full">
+
+                        <label for="profileAddress">
+                            Address
+                        </label>
+
+                        <textarea
+                            id="profileAddress"
+                            placeholder="Enter your address"
+                        >Customer address</textarea>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 ACCOUNT INFORMATION
+            ================================================== -->
+
+            <section class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <div class="kicker">
+                            ACCOUNT
+                        </div>
+
+                        <h3>
+                            Account Information
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-grid">
+
+
+                    <div class="detail">
+
+                        <span>
+                            Account Status
+                        </span>
+
+                        <strong>
+                            Active
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail">
+
+                        <span>
+                            Customer Since
+                        </span>
+
+                        <strong>
+                            24 Aug 2026
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail">
+
+                        <span>
+                            Email Status
+                        </span>
+
+                        <strong>
+                            Verified
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail">
+
+                        <span>
+                            Account Type
+                        </span>
+
+                        <strong>
+                            Customer
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+
+            <div class="footer">
+
+                <span>
+                    TELCOCONNECT Customer Portal
+                </span>
+
+
+                <span>
+                    Need help?
+                    Contact Support
+                </span>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         PROFILE PAGE JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+
+                /*
+                 * ------------------------------------------------
+                 * SAVE PROFILE
+                 * ------------------------------------------------
+                 */
+
+                const saveProfile =
+                    document.getElementById(
+                        "saveProfile"
+                    );
+
+
+                saveProfile.addEventListener(
+                    "click",
+                    function () {
+
+                        const name =
+                            document.getElementById(
+                                "profileName"
+                            ).value.trim();
+
+
+                        const email =
+                            document.getElementById(
+                                "profileEmail"
+                            ).value.trim();
+
+
+                        const phone =
+                            document.getElementById(
+                                "profilePhone"
+                            ).value.trim();
+
+
+                        if (
+                            !name ||
+                            !email ||
+                            !phone
+                        ) {
+
+                            alert(
+                                "Please fill in all required fields."
+                            );
+
+                            return;
+                        }
+
+
+                        alert(
+                            "Profile changes are ready to be connected to the database."
+                        );
+
+                    }
+                );
+
+            }
+
+        );
+
+    </script>
+
+
+    <!-- =====================================================
+         SHARED APPLICATION JAVASCRIPT
+    ====================================================== -->
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>

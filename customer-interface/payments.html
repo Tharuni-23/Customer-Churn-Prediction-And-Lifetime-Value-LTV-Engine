@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TelcoConnect - Payment History</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         APPLICATION LAYOUT
+    ====================================================== -->
+
+    <div class="app-layout">
+
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                TELCOCONNECT
+            </div>
+
+
+            <nav class="nav">
+
+                <!-- Dashboard -->
+                <a
+                    href="dashboard.html"
+                >
+                    ⌂
+                    <span>
+                        Dashboard
+                    </span>
+                </a>
+
+
+                <!-- Profile -->
+                <a
+                    href="profile.html"
+                >
+                    👤
+                    <span>
+                        My Profile
+                    </span>
+                </a>
+
+
+                <!-- My Plan -->
+                <a
+                    href="plan.html"
+                >
+                    📦
+                    <span>
+                        My Plan
+                    </span>
+                </a>
+
+
+                <!-- Change Plan -->
+                <a
+                    href="change-plan.html"
+                >
+                    🔄
+                    <span>
+                        Change Plan
+                    </span>
+                </a>
+
+
+                <!-- Billing -->
+                <a
+                    href="billing.html"
+                >
+                    💳
+                    <span>
+                        Billing &amp; Payments
+                    </span>
+                </a>
+
+
+                <!-- Payment History -->
+                <a
+                    href="payments.html"
+                    class="active"
+                >
+                    🧾
+                    <span>
+                        Payment History
+                    </span>
+                </a>
+
+
+                <!-- Support -->
+                <a
+                    href="support.html"
+                >
+                    💬
+                    <span>
+                        Support
+                    </span>
+                </a>
+
+            </nav>
+
+
+            <!-- Logout -->
+
+            <div class="sidebar-bottom">
+
+                <button
+                    class="logout"
+                    id="logoutButton"
+                    type="button"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =================================================
+             MAIN CONTENT
+        ================================================== -->
+
+        <main class="main">
+
+
+            <!-- =================================================
+                 TOP BAR
+            ================================================== -->
+
+            <header class="topbar">
+
+                <div>
+
+                    <div class="kicker">
+                        CUSTOMER PORTAL
+                    </div>
+
+                    <h1>
+                        Payment History
+                    </h1>
+
+                </div>
+
+
+                <div class="top-right">
+
+                    <!-- Theme -->
+
+                    <button
+                        class="icon-btn"
+                        id="themeToggle"
+                        type="button"
+                        aria-label="Toggle theme"
+                    >
+                        🌙
+                    </button>
+
+
+                    <!-- Customer information -->
+
+                    <div class="profile-mini">
+
+                        <div
+                            class="avatar"
+                            data-customer-name
+                        >
+                            C
+                        </div>
+
+
+                        <div>
+
+                            <strong
+                                data-customer-name
+                            >
+                                Customer
+                            </strong>
+
+
+                            <span
+                                data-customer-id
+                            >
+                                CUST-XXXXX
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================================
+                 PAGE INTRO
+            ================================================== -->
+
+            <section class="hero">
+
+                <div class="accent">
+                    TRANSACTIONS
+                </div>
+
+
+                <h2>
+                    Payment History
+                </h2>
+
+
+                <p>
+                    View previous payments and
+                    transaction status.
+                </p>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 PAYMENT HISTORY TABLE
+            ================================================== -->
+
+            <section class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <div class="kicker">
+                            TRANSACTIONS
+                        </div>
+
+                        <h3>
+                            Previous Payments
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="table-wrap">
+
+                    <table class="table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Date
+                                </th>
+
+                                <th>
+                                    Transaction ID
+                                </th>
+
+                                <th>
+                                    Amount
+                                </th>
+
+                                <th>
+                                    Method
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+
+                            <!-- Payment 1 -->
+
+                            <tr>
+
+                                <td>
+                                    20 Aug 2026
+                                </td>
+
+                                <td>
+                                    TXN-10421
+                                </td>
+
+                                <td>
+                                    ₹499
+                                </td>
+
+                                <td>
+                                    UPI
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="badge badge-success"
+                                    >
+                                        Paid
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Payment 2 -->
+
+                            <tr>
+
+                                <td>
+                                    20 Jul 2026
+                                </td>
+
+                                <td>
+                                    TXN-10311
+                                </td>
+
+                                <td>
+                                    ₹499
+                                </td>
+
+                                <td>
+                                    Card
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="badge badge-success"
+                                    >
+                                        Paid
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- Payment 3 -->
+
+                            <tr>
+
+                                <td>
+                                    20 Jun 2026
+                                </td>
+
+                                <td>
+                                    TXN-10195
+                                </td>
+
+                                <td>
+                                    ₹499
+                                </td>
+
+                                <td>
+                                    UPI
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="badge badge-success"
+                                    >
+                                        Paid
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+
+            <div class="footer">
+
+                <span>
+                    TELCOCONNECT Customer Portal
+                </span>
+
+
+                <span>
+                    Need help?
+                    Contact Support
+                </span>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         SHARED JAVASCRIPT
+    ====================================================== -->
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>

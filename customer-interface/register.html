@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TelcoConnect - Register</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         REGISTER CONTAINER
+    ====================================================== -->
+
+    <div class="center">
+
+        <div class="login-card">
+
+
+            <!-- =================================================
+                 BRAND
+            ================================================== -->
+
+            <div class="login-brand">
+                TELCOCONNECT
+            </div>
+
+
+            <!-- =================================================
+                 HEADING
+            ================================================== -->
+
+            <h1>
+                Create Account
+            </h1>
+
+
+            <p class="sub">
+                Create your customer account to get started.
+            </p>
+
+
+            <!-- =================================================
+                 REGISTRATION FORM
+            ================================================== -->
+
+            <form id="registerForm">
+
+
+                <!-- FULL NAME -->
+
+                <div class="field">
+
+                    <label for="name">
+                        Full Name
+                    </label>
+
+                    <input
+                        id="name"
+                        type="text"
+                        placeholder="Enter your full name"
+                        autocomplete="name"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div
+                    class="field"
+                    style="margin-top:14px"
+                >
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        autocomplete="email"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PASSWORD -->
+
+                <div
+                    class="field"
+                    style="margin-top:14px"
+                >
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        id="password"
+                        type="password"
+                        placeholder="Create a password"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- CONFIRM PASSWORD -->
+
+                <div
+                    class="field"
+                    style="margin-top:14px"
+                >
+
+                    <label for="confirm">
+                        Confirm Password
+                    </label>
+
+                    <input
+                        id="confirm"
+                        type="password"
+                        placeholder="Confirm your password"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- REGISTER BUTTON -->
+
+                <button
+                    class="btn btn-primary"
+                    type="submit"
+                    style="
+                        width:100%;
+                        margin-top:18px;
+                    "
+                >
+                    Create Account
+                </button>
+
+
+                <!-- MESSAGE -->
+
+                <div
+                    id="msg"
+                    class="muted"
+                    style="margin-top:12px"
+                ></div>
+
+            </form>
+
+
+            <!-- =================================================
+                 LOGIN LINK
+            ================================================== -->
+
+            <div
+                style="
+                    text-align:center;
+                    margin-top:18px;
+                    font-size:12px;
+                    color:var(--muted);
+                "
+            >
+
+                Already have an account?
+
+                <a
+                    href="index.html"
+                    style="
+                        color:var(--blue);
+                        font-weight:700;
+                    "
+                >
+                    Login
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         REGISTER JAVASCRIPT
+    ====================================================== -->
+
+    <script src="register.js"></script>
+
+</body>
+
+</html>
