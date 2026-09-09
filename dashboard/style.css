@@ -1,0 +1,665 @@
+/* ============================================================
+   GLOBAL
+   ============================================================ */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    color: #1f2937;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.header {
+    background: #1f2937;
+    color: white;
+
+    padding: 24px 40px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.header h1 {
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+
+.header p {
+    opacity: 0.8;
+}
+
+
+.header button {
+    padding: 10px 20px;
+
+    border: none;
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+
+/* ============================================================
+   MAIN CONTAINER
+   ============================================================ */
+
+.container {
+    max-width: 1400px;
+
+    margin: 30px auto;
+
+    padding: 0 25px;
+}
+
+
+/* ============================================================
+   SUMMARY CARDS
+   ============================================================ */
+
+.cards {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 20px;
+}
+
+
+.card {
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+.card h3 {
+    color: #6b7280;
+
+    font-size: 15px;
+
+    margin-bottom: 12px;
+}
+
+
+.card p {
+    font-size: 28px;
+
+    font-weight: bold;
+}
+
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+
+.section {
+    margin-top: 35px;
+}
+
+
+.section h2 {
+    margin-bottom: 18px;
+}
+
+
+/* ============================================================
+   RISK CARDS
+   ============================================================ */
+
+.risk-cards {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 20px;
+}
+
+
+.risk-card {
+    background: white;
+
+    padding: 22px;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08);
+
+    border-left: 5px solid #6b7280;
+}
+
+
+.risk-card.high {
+    border-left-color: #dc2626;
+}
+
+
+.risk-card.medium {
+    border-left-color: #f59e0b;
+}
+
+
+.risk-card.low {
+    border-left-color: #16a34a;
+}
+
+
+.risk-card h3 {
+    margin-bottom: 10px;
+}
+
+
+.risk-card p {
+    font-size: 25px;
+
+    font-weight: bold;
+}
+
+
+/* ============================================================
+   RISK DISTRIBUTION CHART
+   ============================================================ */
+
+.chart-section {
+    background: white;
+
+    padding: 25px;
+
+    margin-top: 30px;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+.chart-section h2 {
+    margin-bottom: 20px;
+}
+
+
+.chart-container {
+    position: relative;
+
+    width: 100%;
+
+    height: 350px;
+}
+
+
+/* ============================================================
+   TABLE
+   ============================================================ */
+
+.table-container {
+    background: white;
+
+    border-radius: 10px;
+
+    overflow-x: auto;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 900px;
+}
+
+
+th,
+td {
+    padding: 14px 16px;
+
+    text-align: left;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+th {
+    background: #f9fafb;
+
+    font-size: 14px;
+}
+
+
+td {
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   RISK LABELS
+   ============================================================ */
+
+.risk-high {
+    color: #dc2626;
+
+    font-weight: bold;
+}
+
+
+.risk-medium {
+    color: #f59e0b;
+
+    font-weight: bold;
+}
+
+
+.risk-low {
+    color: #16a34a;
+
+    font-weight: bold;
+}
+
+
+/* ============================================================
+   CUSTOMER SEARCH
+   ============================================================ */
+
+.search-box {
+    background: white;
+
+    padding: 20px;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08);
+
+    display: flex;
+
+    gap: 12px;
+}
+
+
+.search-box input {
+    flex: 1;
+
+    padding: 12px 15px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 6px;
+
+    font-size: 15px;
+}
+
+
+.search-box button {
+    padding: 12px 25px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: #1f2937;
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+.customer-details {
+    margin-top: 20px;
+}
+
+
+.customer-detail-grid {
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08);
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 20px;
+}
+
+
+.customer-detail-grid div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+
+.customer-detail-grid strong {
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+
+.customer-detail-grid span {
+    font-size: 16px;
+
+    font-weight: bold;
+}
+
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.error {
+    color: #dc2626;
+
+    margin-top: 20px;
+
+    font-weight: bold;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .risk-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .customer-detail-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .risk-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .header {
+        padding: 20px;
+    }
+
+    .container {
+        padding: 0 15px;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .customer-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-container {
+        height: 280px;
+    }
+
+}
+/* ============================================================
+   CSV UPLOAD
+   ============================================================ */
+
+.csv-upload-section,
+.csv-results-section {
+    background: white;
+    margin-top: 35px;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.section-description {
+    color: #667085;
+    margin-bottom: 20px;
+}
+
+.csv-upload-box {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 25px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.csv-upload-box input[type="file"] {
+    flex: 1;
+    padding: 10px;
+}
+
+#uploadCsvBtn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    background: #1d4ed8;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#uploadCsvBtn:hover {
+    background: #1e40af;
+}
+
+#uploadCsvBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.upload-status {
+    margin-top: 15px;
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   CSV SUMMARY CARDS
+   ============================================================ */
+
+.csv-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin: 20px 0 30px;
+}
+
+.csv-summary-card {
+    padding: 20px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.csv-summary-card span {
+    display: block;
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.csv-summary-card strong {
+    font-size: 24px;
+    color: #1e293b;
+}
+
+
+/* ============================================================
+   CSV RESULTS TABLE
+   ============================================================ */
+
+.csv-results-section h3 {
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.csv-results-section .table-wrapper {
+    overflow-x: auto;
+}
+
+.csv-results-section table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.csv-results-section th,
+.csv-results-section td {
+    padding: 13px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.csv-results-section th {
+    background: #f8fafc;
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   RESPONSIVE CSV SECTION
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    .csv-summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .csv-upload-box {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #uploadCsvBtn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .csv-summary-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .csv-upload-section,
+    .csv-results-section {
+        padding: 20px;
+    }
+}
+/* ============================================================
+   CSV DOWNLOAD BUTTON
+   ============================================================ */
+
+#downloadCsvBtn {
+    display: inline-block;
+    margin: 0 0 25px 0;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    background: #1d4ed8;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#downloadCsvBtn:hover {
+    background: #1e40af;
+}
+
+#downloadCsvBtn:active {
+    transform: translateY(1px);
+}
+/* ============================================================
+   CSV UPLOAD BUTTON POLISH
+   ============================================================ */
+
+#uploadCsvBtn {
+    min-width: 150px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    background: #1d4ed8;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#uploadCsvBtn:hover {
+    background: #1e40af;
+}
+
+#uploadCsvBtn:active {
+    transform: translateY(1px);
+}
+
+#uploadCsvBtn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+/* ============================================================
+   CSV SECTION POLISH
+   ============================================================ */
+
+.csv-upload-section h2,
+.csv-results-section h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.csv-results-section h3 {
+    color: #1e293b;
+}
