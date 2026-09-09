@@ -77,8 +77,8 @@ def get_all_customers():
 
     query = """
         SELECT *
-        FROM customer_churn
-        ORDER BY "customerID";
+        FROM customers
+        ORDER BY customerid;
     """
 
     return pd.read_sql(
@@ -95,8 +95,8 @@ def get_customer(customer_id):
 
     query = text("""
         SELECT *
-        FROM customer_churn
-        WHERE "customerID" = :customer_id;
+        FROM customers
+        WHERE customerid = :customer_id;
     """)
 
     with engine.connect() as connection:
@@ -129,24 +129,24 @@ def get_dashboard_summary():
             COUNT(*) AS total_customers,
 
             COUNT(*) FILTER (
-                WHERE "Churn" = 'Yes'
+                WHERE churn = 'Yes'
             ) AS churned_customers,
 
             COUNT(*) FILTER (
-                WHERE "Churn" = 'No'
+                WHERE churn = 'No'
             ) AS retained_customers,
 
 ROUND(
-    AVG("MonthlyCharges")::numeric,
+    AVG(monthlycharges)::numeric,
     2
 ) AS average_monthly_charges,
 
 ROUND(
-    SUM("MonthlyCharges")::numeric,
+    SUM(monthlycharges)::numeric,
     2
 ) AS total_monthly_revenue
 
-        FROM customer_churn;
+        FROM customers;
     """)
 
     with engine.connect() as connection:
@@ -163,13 +163,13 @@ def write_prediction(
     predicted_ltv
 ):
     query = text("""
-        UPDATE customer_churn
+        UPDATE customers
         SET
             predicted_churn = :predicted_churn,
             churn_probability = :churn_probability,
             predicted_ltv = :predicted_ltv,
             prediction_at = CURRENT_TIMESTAMP
-        WHERE "customerID" = :customer_id;
+        WHERE customerid = :customer_id;
     """)
 
     with engine.connect() as connection:

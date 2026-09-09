@@ -1,22 +1,9 @@
-# ============================================================
-# database.py
-#
-# PURPOSE:
-#   Database connection and database read/write operations.
-#
-# IMPORTANT:
-#   - No ML logic here.
-#   - No preprocessing here.
-#   - No five-minute scheduling here.
-#   - Credentials come from .env.
-# ============================================================
-
 import os
 
 import pandas as pd
-
-from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import URL
 
 
 # ============================================================
@@ -30,180 +17,164 @@ load_dotenv()
 # DATABASE CONNECTION
 # ============================================================
 
+connection_url = URL.create(
+    drivername="postgresql+psycopg2",
+    username=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    host=os.getenv("DB_HOST"),
+    port=os.getenv("DB_PORT"),
+    database=os.getenv("DB_NAME"),
+)
+
+engine = create_engine(connection_url)
+
+
+# ============================================================
+# GET DATABASE ENGINE
+# ============================================================
+
 def get_engine():
-    """
-    Create and return the SQLAlchemy engine for Neon PostgreSQL.
-    """
-
-    db_user = os.getenv("DB_USER")
-    db_password = os.getenv("DB_PASSWORD")
-    db_host = os.getenv("DB_HOST")
-    db_port = os.getenv("DB_PORT", "5432")
-    db_name = os.getenv("DB_NAME")
-
-    # --------------------------------------------------------
-    # Validate credentials
-    # --------------------------------------------------------
-
-    if not all(
-        [
-            db_user,
-            db_password,
-            db_host,
-            db_name
-        ]
-    ):
-        raise ValueError(
-            "Database credentials are missing. "
-            "Check your .env file."
-        )
-
-    # --------------------------------------------------------
-    # Neon PostgreSQL connection
-    # --------------------------------------------------------
-
-    engine = create_engine(
-        (
-            "postgresql+psycopg2://"
-            f"{db_user}:{db_password}@"
-            f"{db_host}:{db_port}/{db_name}"
-            "?sslmode=require"
-        ),
-        pool_pre_ping=True,
-        pool_recycle=300
-    )
-
     return engine
 
 
 # ============================================================
-# TEST CONNECTION
+# TEST DATABASE CONNECTION
 # ============================================================
 
-def test_connection(engine=None):
-    """
-    Test the PostgreSQL connection.
-    """
-
-    if engine is None:
-        engine = get_engine()
-
-    with engine.connect():
-        print(
-            "PostgreSQL connected successfully!"
+def test_connection(engine):
+    with engine.connect() as connection:
+        result = connection.execute(
+            text("SELECT current_database();")
         )
 
-    return True
+        database_name = result.fetchone()[0]
+
+        print("Connected to:", database_name)
 
 
 # ============================================================
-# FETCH CUSTOMERS CHANGED DURING A WINDOW
+# GET ALL CUSTOMERS
 # ============================================================
 
-def fetch_customers_in_window(
-    window_start,
-    window_end,
-    engine=None
-):
-    """
-    Fetch customers whose updated_at falls inside
-    the supplied processing window.
+def get_all_customers():
 
-    New rows and updated rows are handled the same way:
-    they are expected to have churn = NULL until prediction
-    is completed.
-    """
-
-    if engine is None:
-        engine = get_engine()
-
-    query = text(
-        """
+    query = """
         SELECT *
-        FROM public.customers
-        WHERE updated_at > :window_start
-          AND updated_at <= :window_end
-          AND churn IS NULL
-        ORDER BY updated_at, customerid
-        """
-    )
+        FROM customers
+        ORDER BY customerid;
+    """
 
-    df = pd.read_sql(
+    return pd.read_sql(
         query,
-        engine,
-        params={
-            "window_start": window_start,
-            "window_end": window_end
-        }
+        engine
     )
-
-    print(
-        f"Fetched {len(df)} customers "
-        f"from the current processing window."
-    )
-
-    return df
 
 
 # ============================================================
-# WRITE PREDICTIONS
+# GET SINGLE CUSTOMER
 # ============================================================
 
-def write_predictions(
-    result,
-    engine=None
-):
-    """
-    Write churn and LTV predictions back to customers.
-    """
+def get_customer(customer_id):
 
-    if engine is None:
-        engine = get_engine()
+    query = text("""
+        SELECT *
+        FROM customers
+        WHERE customerid = :customer_id;
+    """)
 
-    if result.empty:
+    with engine.connect() as connection:
 
-        print(
-            "No predictions to update."
+        result = connection.execute(
+            query,
+            {
+                "customer_id": customer_id
+            }
         )
 
-        return
+        row = result.mappings().first()
 
-    sql = text(
-        """
-        UPDATE public.customers
+        if row is None:
+            return None
 
+        return dict(row)
+
+
+# ============================================================
+# GET DASHBOARD SUMMARY
+# ============================================================
+
+def get_dashboard_summary():
+
+    query = text("""
+        SELECT
+            COUNT(*) AS total_customers,
+
+            COUNT(*) FILTER (
+                WHERE churn = 'Yes'
+            ) AS churned_customers,
+
+            COUNT(*) FILTER (
+                WHERE churn = 'No'
+            ) AS retained_customers,
+
+            ROUND(
+                AVG(monthlycharges)::numeric,
+                2
+            ) AS average_monthly_charges,
+
+            ROUND(
+                SUM(monthlycharges)::numeric,
+                2
+            ) AS total_monthly_revenue,
+
+            ROUND(
+                AVG(churn_probability)::numeric,
+                4
+            ) AS average_churn_probability,
+
+            ROUND(
+                AVG(predicted_ltv)::numeric,
+                2
+            ) AS average_predicted_ltv
+
+        FROM customers;
+    """)
+
+    with engine.connect() as connection:
+
+        result = connection.execute(query)
+
+        row = result.mappings().first()
+
+        return dict(row)
+
+
+# ============================================================
+# WRITE PREDICTION
+# ============================================================
+
+def write_prediction(
+    customer_id,
+    predicted_churn,
+    churn_probability,
+    predicted_ltv
+):
+    query = text("""
+        UPDATE customers
         SET
-            churn = :churn,
             churn_probability = :churn_probability,
             predicted_ltv = :predicted_ltv,
             prediction_at = CURRENT_TIMESTAMP
+        WHERE customerid = :customer_id;
+    """)
 
-        WHERE customerid = :customerid
-        """
-    )
-
-    records = (
-        result[
-            [
-                "customerid",
-                "churn",
-                "churn_probability",
-                "predicted_ltv"
-            ]
-        ]
-        .to_dict(
-            orient="records"
-        )
-    )
-
-    with engine.begin() as connection:
-
+    with engine.connect() as connection:
         connection.execute(
-            sql,
-            records
+            query,
+            {
+                "customer_id": customer_id,
+                "churn_probability": churn_probability,
+                "predicted_ltv": predicted_ltv
+            }
         )
-
-    print(
-        f"Updated {len(records)} customers "
-        f"with predictions."
-    )
+        connection.commit()

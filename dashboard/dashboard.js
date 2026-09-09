@@ -14,6 +14,7 @@ async function fetchJSON(endpoint) {
     );
 
     if (!response.ok) {
+
         throw new Error(
             `API request failed: ${response.status}`
         );
@@ -93,7 +94,6 @@ async function loadRiskSummary() {
         .textContent =
         data.customers_with_predictions;
 
-    // Render chart using the same API data
     renderRiskChart(data);
 }
 
@@ -106,13 +106,16 @@ function getRisk(probability) {
 
     if (
         probability === null ||
-        probability === undefined
+        probability === undefined ||
+        Number.isNaN(Number(probability))
     ) {
         return {
             label: "N/A",
             className: ""
         };
     }
+
+    probability = Number(probability);
 
     if (probability >= 0.70) {
 
@@ -138,6 +141,26 @@ function getRisk(probability) {
 
 
 // ============================================================
+// PREDICTED CHURN FROM PROBABILITY
+// ============================================================
+
+function getPredictedChurn(probability) {
+
+    if (
+        probability === null ||
+        probability === undefined ||
+        Number.isNaN(Number(probability))
+    ) {
+        return "-";
+    }
+
+    return Number(probability) >= 0.50
+        ? "Yes"
+        : "No";
+}
+
+
+// ============================================================
 // LOAD TOP RISK CUSTOMERS
 // ============================================================
 
@@ -157,13 +180,11 @@ async function loadTopRisk() {
 
     data.customers.forEach(customer => {
 
-        const risk =
-            getRisk(
-                customer.churn_probability
-            );
-
         const probability =
             customer.churn_probability;
+
+        const risk =
+            getRisk(probability);
 
         const probabilityText =
             probability !== null &&
@@ -182,12 +203,15 @@ async function loadTopRisk() {
                 : "-";
 
         const chargesText =
-            customer.MonthlyCharges !== null &&
-            customer.MonthlyCharges !== undefined
+            customer.monthlycharges !== null &&
+            customer.monthlycharges !== undefined
                 ? `₹${Number(
-                    customer.MonthlyCharges
+                    customer.monthlycharges
                 ).toFixed(2)}`
                 : "-";
+
+        const predictedChurn =
+            getPredictedChurn(probability);
 
         const row =
             document.createElement("tr");
@@ -195,11 +219,11 @@ async function loadTopRisk() {
         row.innerHTML = `
 
             <td>
-                ${customer.customerID}
+                ${customer.customerid ?? "-"}
             </td>
 
             <td>
-                ${customer.Contract ?? "-"}
+                ${customer.contract ?? "-"}
             </td>
 
             <td>
@@ -270,12 +294,15 @@ async function loadCustomers() {
                 : "-";
 
         const chargesText =
-            customer.MonthlyCharges !== null &&
-            customer.MonthlyCharges !== undefined
+            customer.monthlycharges !== null &&
+            customer.monthlycharges !== undefined
                 ? `₹${Number(
-                    customer.MonthlyCharges
+                    customer.monthlycharges
                 ).toFixed(2)}`
                 : "-";
+
+        const predictedChurn =
+            getPredictedChurn(probability);
 
         const row =
             document.createElement("tr");
@@ -283,11 +310,11 @@ async function loadCustomers() {
         row.innerHTML = `
 
             <td>
-                ${customer.customerID}
+                ${customer.customerid ?? "-"}
             </td>
 
             <td>
-                ${customer.Contract ?? "-"}
+                ${customer.contract ?? "-"}
             </td>
 
             <td>
@@ -299,11 +326,11 @@ async function loadCustomers() {
             </td>
 
             <td>
-                ${customer.Churn ?? "-"}
+                ${customer.churn ?? "-"}
             </td>
 
             <td>
-                ${customer.predicted_churn ?? "-"}
+                ${predictedChurn}
             </td>
 
             <td>
@@ -351,6 +378,7 @@ function renderRiskChart(riskData) {
 
 
     // Destroy previous chart when Refresh is clicked
+
     if (riskChart !== null) {
 
         riskChart.destroy();
@@ -497,18 +525,19 @@ async function searchCustomer() {
             );
 
 
+        const probability =
+            customer.churn_probability;
+
         const risk =
-            getRisk(
-                customer.churn_probability
-            );
+            getRisk(probability);
 
 
         const probabilityText =
-            customer.churn_probability !== null &&
-            customer.churn_probability !== undefined
+            probability !== null &&
+            probability !== undefined
                 ? `${(
                     Number(
-                        customer.churn_probability
+                        probability
                     ) * 100
                 ).toFixed(2)}%`
                 : "-";
@@ -524,12 +553,16 @@ async function searchCustomer() {
 
 
         const chargesText =
-            customer.MonthlyCharges !== null &&
-            customer.MonthlyCharges !== undefined
+            customer.monthlycharges !== null &&
+            customer.monthlycharges !== undefined
                 ? `₹${Number(
-                    customer.MonthlyCharges
+                    customer.monthlycharges
                 ).toFixed(2)}`
                 : "-";
+
+
+        const predictedChurn =
+            getPredictedChurn(probability);
 
 
         details.innerHTML = `
@@ -539,7 +572,7 @@ async function searchCustomer() {
                 <div>
                     <strong>Customer ID</strong>
                     <span>
-                        ${customer.customerID}
+                        ${customer.customerid ?? "-"}
                     </span>
                 </div>
 
@@ -547,7 +580,7 @@ async function searchCustomer() {
                 <div>
                     <strong>Contract</strong>
                     <span>
-                        ${customer.Contract ?? "-"}
+                        ${customer.contract ?? "-"}
                     </span>
                 </div>
 
@@ -571,7 +604,7 @@ async function searchCustomer() {
                 <div>
                     <strong>Actual Churn</strong>
                     <span>
-                        ${customer.Churn ?? "-"}
+                        ${customer.churn ?? "-"}
                     </span>
                 </div>
 
@@ -579,7 +612,7 @@ async function searchCustomer() {
                 <div>
                     <strong>Predicted Churn</strong>
                     <span>
-                        ${customer.predicted_churn ?? "-"}
+                        ${predictedChurn}
                     </span>
                 </div>
 
@@ -649,58 +682,89 @@ document
 // ============================================================
 
 loadDashboard();
+
+
 // ============================================================
 // CSV UPLOAD AND PREDICTION
 // ============================================================
 
 async function uploadCSV() {
 
-    const fileInput = document.getElementById("csvFile");
-    const uploadButton = document.getElementById("uploadCsvBtn");
-    const status = document.getElementById("uploadStatus");
+    const fileInput =
+        document.getElementById("csvFile");
+
+    const uploadButton =
+        document.getElementById("uploadCsvBtn");
+
+    const status =
+        document.getElementById("uploadStatus");
+
 
     if (!fileInput.files.length) {
 
-        status.textContent = "Please select a CSV file first.";
+        status.textContent =
+            "Please select a CSV file first.";
+
         return;
     }
 
-    const file = fileInput.files[0];
+
+    const file =
+        fileInput.files[0];
+
 
     if (!file.name.toLowerCase().endsWith(".csv")) {
 
-        status.textContent = "Please select a valid CSV file.";
+        status.textContent =
+            "Please select a valid CSV file.";
+
         return;
     }
 
-    const formData = new FormData();
 
-    formData.append("file", file);
+    const formData =
+        new FormData();
+
+    formData.append(
+        "file",
+        file
+    );
+
 
     uploadButton.disabled = true;
-    uploadButton.textContent = "Processing...";
+
+    uploadButton.textContent =
+        "Processing...";
+
 
     status.textContent =
         "Uploading CSV and generating predictions...";
 
+
     try {
 
-        const response = await fetch(
-            `${API_URL}/dashboard/upload-csv`,
-            {
-                method: "POST",
-                body: formData
-            }
-        );
+        const response =
+            await fetch(
+                `${API_URL}/dashboard/upload-csv`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
 
-        const data = await response.json();
+
+        const data =
+            await response.json();
+
 
         if (!response.ok) {
 
             throw new Error(
-                data.detail || "CSV processing failed"
+                data.detail ||
+                "CSV processing failed"
             );
         }
+
 
         // ----------------------------------------------------
         // Display summary
@@ -710,29 +774,42 @@ async function uploadCSV() {
             "csvSummarySection"
         ).style.display = "block";
 
+
         document.getElementById(
             "csvTotalCustomers"
-        ).textContent = data.total_customers;
+        ).textContent =
+            data.total_customers;
+
 
         document.getElementById(
             "csvChurned"
-        ).textContent = data.predicted_churn;
+        ).textContent =
+            data.predicted_churn;
+
 
         document.getElementById(
             "csvRetained"
-        ).textContent = data.predicted_retained;
+        ).textContent =
+            data.predicted_retained;
+
 
         document.getElementById(
             "csvHighRisk"
-        ).textContent = data.high_risk_customers;
+        ).textContent =
+            data.high_risk_customers;
+
 
         document.getElementById(
             "csvMediumRisk"
-        ).textContent = data.medium_risk_customers;
+        ).textContent =
+            data.medium_risk_customers;
+
 
         document.getElementById(
             "csvLowRisk"
-        ).textContent = data.low_risk_customers;
+        ).textContent =
+            data.low_risk_customers;
+
 
         document.getElementById(
             "csvAvgLtv"
@@ -746,17 +823,23 @@ async function uploadCSV() {
         // Display prediction table
         // ----------------------------------------------------
 
-        const tbody = document.getElementById(
-            "csvResultsBody"
-        );
+        const tbody =
+            document.getElementById(
+                "csvResultsBody"
+            );
+
 
         tbody.innerHTML = "";
 
+
         data.results.forEach(customer => {
 
-            const row = document.createElement("tr");
+            const row =
+                document.createElement("tr");
+
 
             row.innerHTML = `
+
                 <td>
                     ${customer.customerID ?? "-"}
                 </td>
@@ -796,9 +879,12 @@ async function uploadCSV() {
                 <td>
                     ${customer.risk_level ?? "-"}
                 </td>
+
             `;
 
+
             tbody.appendChild(row);
+
         });
 
 
@@ -809,15 +895,21 @@ async function uploadCSV() {
         document.getElementById(
             "csvDisplayedInfo"
         ).textContent =
-            `Showing ${data.displayed_customers ?? data.results.length} ` +
-            `of ${data.total_customers} customers from ` +
-            `${data.filename}.`;
+            `Showing ${
+                data.displayed_customers ??
+                data.results.length
+            } of ${
+                data.total_customers
+            } customers from ${
+                data.filename
+            }.`;
 
 
         status.textContent =
             "CSV processed successfully.";
 
     }
+
 
     catch (error) {
 
@@ -826,8 +918,10 @@ async function uploadCSV() {
             error
         );
 
+
         status.textContent =
             `Error: ${error.message}`;
+
 
         document.getElementById(
             "csvSummarySection"
@@ -835,12 +929,18 @@ async function uploadCSV() {
 
     }
 
+
     finally {
 
         uploadButton.disabled = false;
-        uploadButton.textContent = "Process CSV";
+
+        uploadButton.textContent =
+            "Process CSV";
+
     }
 }
+
+
 // ============================================================
 // DOWNLOAD CSV PREDICTION RESULTS
 // ============================================================

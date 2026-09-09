@@ -8,9 +8,12 @@ import io
 from . import database as db
 from .prediction_pipeline import predict_customer
 
+
 # Stores the latest uploaded CSV prediction results
 # for download from the Manager Dashboard.
 latest_prediction_csv = None
+
+
 # ============================================================
 # JSON SAFE CONVERSION
 # ============================================================
@@ -132,20 +135,20 @@ def dashboard_summary():
                 COUNT(*) AS total_customers,
 
                 COUNT(*) FILTER (
-                    WHERE "Churn" = 'Yes'
+                    WHERE churn = 'Yes'
                 ) AS churned_customers,
 
                 COUNT(*) FILTER (
-                    WHERE "Churn" = 'No'
+                    WHERE churn = 'No'
                 ) AS retained_customers,
 
                 ROUND(
-                    AVG("MonthlyCharges")::numeric,
+                    AVG(monthlycharges)::numeric,
                     2
                 ) AS average_monthly_charges,
 
                 ROUND(
-                    SUM("MonthlyCharges")::numeric,
+                    SUM(monthlycharges)::numeric,
                     2
                 ) AS total_monthly_revenue,
 
@@ -159,7 +162,7 @@ def dashboard_summary():
                     2
                 ) AS average_predicted_ltv
 
-            FROM customer_churn;
+            FROM customers;
         """)
 
         with engine.connect() as connection:
@@ -190,8 +193,8 @@ def get_customers():
 
         query = text("""
             SELECT *
-            FROM customer_churn
-            ORDER BY "customerID"
+            FROM customers
+            ORDER BY customerid
             LIMIT 100;
         """)
 
@@ -229,8 +232,8 @@ def get_customer(customer_id: str):
 
         query = text("""
             SELECT *
-            FROM customer_churn
-            WHERE "customerID" = :customer_id;
+            FROM customers
+            WHERE customerid = :customer_id;
         """)
 
         with engine.connect() as connection:
@@ -276,27 +279,27 @@ def dashboard_customers():
 
         query = text("""
             SELECT
-                "customerID",
-                "gender",
-                "SeniorCitizen",
-                "Partner",
-                "Dependents",
-                "tenure",
-                "Contract",
-                "MonthlyCharges",
-                "TotalCharges",
-                "Churn",
-                "TenureGroup",
-                "TotalServices",
-                "Mails",
-                predicted_churn,
+                customerid,
+                gender,
+                seniorcitizen,
+                partner,
+                dependents,
+                tenure,
+                contract,
+                monthlycharges,
+                totalcharges,
+                churn,
+                tenuregroup,
+                totalservices,
                 churn_probability,
                 predicted_ltv,
                 prediction_at
 
-            FROM customer_churn
+            FROM customers
 
-            ORDER BY "customerID"
+            ORDER BY
+            churn_probability DESC NULLS LAST,
+            customerid
 
             LIMIT 100;
         """)
@@ -381,7 +384,7 @@ def dashboard_risk_summary():
                     WHERE churn_probability IS NOT NULL
                 ) AS customers_with_predictions
 
-            FROM customer_churn;
+            FROM customers;
         """)
 
         with engine.connect() as connection:
@@ -412,27 +415,25 @@ def dashboard_customer_details(customer_id: str):
 
         query = text("""
             SELECT
-                "customerID",
-                "gender",
-                "SeniorCitizen",
-                "Partner",
-                "Dependents",
-                "tenure",
-                "Contract",
-                "MonthlyCharges",
-                "TotalCharges",
-                "Churn",
-                "TenureGroup",
-                "TotalServices",
-                "Mails",
-                predicted_churn,
+                customerid,
+                gender,
+                seniorcitizen,
+                partner,
+                dependents,
+                tenure,
+                contract,
+                monthlycharges,
+                totalcharges,
+                churn,
+                tenuregroup,
+                totalservices,
                 churn_probability,
                 predicted_ltv,
                 prediction_at
 
-            FROM customer_churn
+            FROM customers
 
-            WHERE "customerID" = :customer_id;
+            WHERE customerid = :customer_id;
         """)
 
         with engine.connect() as connection:
@@ -478,16 +479,15 @@ def dashboard_top_risk():
 
         query = text("""
             SELECT
-                "customerID",
-                "Contract",
-                "tenure",
-                "MonthlyCharges",
-                predicted_churn,
+                customerid,
+                contract,
+                tenure,
+                monthlycharges,
                 churn_probability,
                 predicted_ltv,
                 prediction_at
 
-            FROM customer_churn
+            FROM customers
 
             WHERE churn_probability IS NOT NULL
 
@@ -524,6 +524,7 @@ def dashboard_top_risk():
 
 @app.post("/dashboard/upload-csv")
 async def upload_csv(file: UploadFile = File(...)):
+
     global latest_prediction_csv
 
     try:
@@ -539,6 +540,7 @@ async def upload_csv(file: UploadFile = File(...)):
                 detail="Please upload a CSV file"
             )
 
+
         # ----------------------------------------------------
         # 2. Read uploaded file
         # ----------------------------------------------------
@@ -552,6 +554,7 @@ async def upload_csv(file: UploadFile = File(...)):
                 detail="Uploaded CSV file is empty"
             )
 
+
         # ----------------------------------------------------
         # 3. Import CSV/ML tools
         # ----------------------------------------------------
@@ -561,6 +564,7 @@ async def upload_csv(file: UploadFile = File(...)):
 
         from .prediction_pipeline import load_models
         from preprocessing import transform
+
 
         # ----------------------------------------------------
         # 4. Read CSV
@@ -577,17 +581,20 @@ async def upload_csv(file: UploadFile = File(...)):
                 detail="CSV file contains no customer records"
             )
 
+
         # ----------------------------------------------------
         # 5. Load models
         # ----------------------------------------------------
 
         package, churn_model, ltv_model = load_models()
 
+
         # ----------------------------------------------------
         # 6. Preserve original CSV data
         # ----------------------------------------------------
 
         original_df = df.copy()
+
 
         # ----------------------------------------------------
         # 7. Preprocess CSV
@@ -598,6 +605,7 @@ async def upload_csv(file: UploadFile = File(...)):
             package
         )
 
+
         # ----------------------------------------------------
         # 8. Churn prediction
         # ----------------------------------------------------
@@ -607,11 +615,14 @@ async def upload_csv(file: UploadFile = File(...)):
             .predict_proba(X)[:, 1]
         )
 
+
         # Convert probabilities to normal Python floats
+
         churn_probabilities = [
             float(probability)
             for probability in churn_probabilities
         ]
+
 
         # ----------------------------------------------------
         # 9. Churn classification
@@ -621,9 +632,9 @@ async def upload_csv(file: UploadFile = File(...)):
             "Yes"
             if probability >= 0.50
             else "No"
-
             for probability in churn_probabilities
         ]
+
 
         # ----------------------------------------------------
         # 10. LTV prediction
@@ -636,11 +647,13 @@ async def upload_csv(file: UploadFile = File(...)):
             for value in predicted_ltv
         ]
 
+
         # ----------------------------------------------------
         # 11. Build dashboard results
         # ----------------------------------------------------
 
         # Keep only useful columns for the Manager Dashboard
+
         dashboard_columns = []
 
         for column in [
@@ -649,10 +662,16 @@ async def upload_csv(file: UploadFile = File(...)):
             "tenure",
             "MonthlyCharges"
         ]:
+
             if column in original_df.columns:
+
                 dashboard_columns.append(column)
 
-        results_df = original_df[dashboard_columns].copy()
+
+        results_df = original_df[
+            dashboard_columns
+        ].copy()
+
 
         results_df["predicted_churn"] = predicted_churn
 
@@ -698,9 +717,12 @@ async def upload_csv(file: UploadFile = File(...)):
 
         # Keep the complete prediction results available
         # for the Download Results button.
-        latest_prediction_csv = results_df.to_csv(
-            index=False
-        ).encode("utf-8")
+
+        latest_prediction_csv = (
+            results_df
+            .to_csv(index=False)
+            .encode("utf-8")
+        )
 
 
         # ----------------------------------------------------
@@ -709,11 +731,14 @@ async def upload_csv(file: UploadFile = File(...)):
 
         # Return only the first 100 rows to the dashboard.
         # The complete CSV is still available for download.
+
         display_df = results_df.head(100)
 
         results = display_df.to_dict(
             orient="records"
         )
+
+
         # ----------------------------------------------------
         # 15. Calculate summary values
         # ----------------------------------------------------
@@ -742,6 +767,7 @@ async def upload_csv(file: UploadFile = File(...)):
             prediction == "No"
             for prediction in predicted_churn
         )
+
 
         # ----------------------------------------------------
         # 16. Build final response
@@ -794,6 +820,7 @@ async def upload_csv(file: UploadFile = File(...)):
             "results": results
         }
 
+
         # ----------------------------------------------------
         # 17. Final JSON-safe conversion
         # ----------------------------------------------------
@@ -802,9 +829,11 @@ async def upload_csv(file: UploadFile = File(...)):
             response_data
         )
 
+
         return JSONResponse(
             content=response_data
         )
+
 
     except HTTPException:
         raise
@@ -815,6 +844,8 @@ async def upload_csv(file: UploadFile = File(...)):
             status_code=500,
             detail=f"CSV prediction failed: {str(e)}"
         )
+
+
 # ============================================================
 # DOWNLOAD CSV PREDICTION RESULTS
 # ============================================================
@@ -825,10 +856,15 @@ async def download_csv():
     global latest_prediction_csv
 
     if latest_prediction_csv is None:
+
         raise HTTPException(
             status_code=404,
-            detail="No CSV prediction results available. Upload and process a CSV first."
+            detail=(
+                "No CSV prediction results available. "
+                "Upload and process a CSV first."
+            )
         )
+
 
     return StreamingResponse(
         io.BytesIO(latest_prediction_csv),
