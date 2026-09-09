@@ -13,7 +13,12 @@
 
 <body>
 
+    <!-- ============================================================
+         HEADER
+         ============================================================ -->
+
     <header class="header">
+
         <div>
             <h1>Customer Churn & LTV</h1>
             <p>Manager Dashboard</p>
@@ -22,12 +27,15 @@
         <button id="refreshBtn" onclick="loadDashboard()">
             Refresh
         </button>
+
     </header>
 
 
     <main class="container">
 
-        <!-- SUMMARY CARDS -->
+        <!-- ========================================================
+             SUMMARY CARDS
+             ======================================================== -->
 
         <section class="cards">
 
@@ -64,7 +72,9 @@
         </section>
 
 
-        <!-- RISK SUMMARY -->
+        <!-- ========================================================
+             RISK SUMMARY
+             ======================================================== -->
 
         <section class="section">
 
@@ -94,10 +104,27 @@
 
             </div>
 
+
+            <!-- ====================================================
+                 RISK DISTRIBUTION CHART
+                 ==================================================== -->
+
+            <div class="chart-section">
+
+                <h2>Risk Distribution</h2>
+
+                <div class="chart-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+
+            </div>
+
         </section>
 
 
-        <!-- TOP RISK -->
+        <!-- ========================================================
+             TOP AT-RISK CUSTOMERS
+             ======================================================== -->
 
         <section class="section">
 
@@ -131,33 +158,40 @@
         </section>
 
 
-        <!-- ALL CUSTOMERS -->
-<!-- CUSTOMER SEARCH -->
+        <!-- ========================================================
+             CUSTOMER SEARCH
+             ======================================================== -->
 
-<section class="section">
+        <section class="section">
 
-    <h2>Customer Search</h2>
+            <h2>Customer Search</h2>
 
-    <div class="search-box">
+            <div class="search-box">
 
-        <input
-            type="text"
-            id="customerSearch"
-            placeholder="Enter Customer ID"
-        >
+                <input
+                    type="text"
+                    id="customerSearch"
+                    placeholder="Enter Customer ID"
+                >
 
-        <button onclick="searchCustomer()">
-            Search
-        </button>
+                <button onclick="searchCustomer()">
+                    Search
+                </button>
 
-    </div>
+            </div>
 
-    <div
-        id="customerDetails"
-        class="customer-details"
-    ></div>
+            <div
+                id="customerDetails"
+                class="customer-details"
+            ></div>
 
-</section>
+        </section>
+
+
+        <!-- ========================================================
+             CUSTOMER DATA
+             ======================================================== -->
+
         <section class="section">
 
             <h2>Customer Data</h2>
@@ -191,10 +225,20 @@
         </section>
 
 
+        <!-- ========================================================
+             ERROR MESSAGE
+             ======================================================== -->
+
         <p id="errorMessage" class="error"></p>
 
     </main>
 
+
+    <!-- ============================================================
+         JAVASCRIPT LIBRARIES
+         ============================================================ -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="dashboard.js"></script>
 

@@ -1,5 +1,11 @@
 const API_URL = "http://127.0.0.1:8000";
 
+let riskChart = null;
+
+
+// ============================================================
+// GENERIC API REQUEST
+// ============================================================
 
 async function fetchJSON(endpoint) {
 
@@ -86,6 +92,9 @@ async function loadRiskSummary() {
     document.getElementById("predictionCount")
         .textContent =
         data.customers_with_predictions;
+
+    // Render chart using the same API data
+    renderRiskChart(data);
 }
 
 
@@ -95,15 +104,15 @@ async function loadRiskSummary() {
 
 function getRisk(probability) {
 
-    if (probability === null ||
-        probability === undefined) {
-
+    if (
+        probability === null ||
+        probability === undefined
+    ) {
         return {
             label: "N/A",
             className: ""
         };
     }
-
 
     if (probability >= 0.70) {
 
@@ -111,9 +120,7 @@ function getRisk(probability) {
             label: "HIGH",
             className: "risk-high"
         };
-
     }
-
 
     if (probability >= 0.40) {
 
@@ -121,9 +128,7 @@ function getRisk(probability) {
             label: "MEDIUM",
             className: "risk-medium"
         };
-
     }
-
 
     return {
         label: "LOW",
@@ -150,7 +155,6 @@ async function loadTopRisk() {
 
     table.innerHTML = "";
 
-
     data.customers.forEach(customer => {
 
         const risk =
@@ -158,9 +162,35 @@ async function loadTopRisk() {
                 customer.churn_probability
             );
 
+        const probability =
+            customer.churn_probability;
+
+        const probabilityText =
+            probability !== null &&
+            probability !== undefined
+                ? `${(
+                    Number(probability) * 100
+                ).toFixed(2)}%`
+                : "-";
+
+        const ltvText =
+            customer.predicted_ltv !== null &&
+            customer.predicted_ltv !== undefined
+                ? `₹${Number(
+                    customer.predicted_ltv
+                ).toFixed(2)}`
+                : "-";
+
+        const chargesText =
+            customer.MonthlyCharges !== null &&
+            customer.MonthlyCharges !== undefined
+                ? `₹${Number(
+                    customer.MonthlyCharges
+                ).toFixed(2)}`
+                : "-";
+
         const row =
             document.createElement("tr");
-
 
         row.innerHTML = `
 
@@ -177,9 +207,7 @@ async function loadTopRisk() {
             </td>
 
             <td>
-                ₹${Number(
-                    customer.MonthlyCharges ?? 0
-                ).toFixed(2)}
+                ${chargesText}
             </td>
 
             <td class="${risk.className}">
@@ -187,17 +215,11 @@ async function loadTopRisk() {
             </td>
 
             <td>
-                ${(
-                    Number(
-                        customer.churn_probability
-                    ) * 100
-                ).toFixed(2)}%
+                ${probabilityText}
             </td>
 
             <td>
-                ₹${Number(
-                    customer.predicted_ltv ?? 0
-                ).toFixed(2)}
+                ${ltvText}
             </td>
 
         `;
@@ -226,15 +248,37 @@ async function loadCustomers() {
 
     table.innerHTML = "";
 
-
     data.customers.forEach(customer => {
 
         const probability =
             customer.churn_probability;
 
+        const probabilityText =
+            probability !== null &&
+            probability !== undefined
+                ? `${(
+                    Number(probability) * 100
+                ).toFixed(2)}%`
+                : "-";
+
+        const ltvText =
+            customer.predicted_ltv !== null &&
+            customer.predicted_ltv !== undefined
+                ? `₹${Number(
+                    customer.predicted_ltv
+                ).toFixed(2)}`
+                : "-";
+
+        const chargesText =
+            customer.MonthlyCharges !== null &&
+            customer.MonthlyCharges !== undefined
+                ? `₹${Number(
+                    customer.MonthlyCharges
+                ).toFixed(2)}`
+                : "-";
+
         const row =
             document.createElement("tr");
-
 
         row.innerHTML = `
 
@@ -251,9 +295,7 @@ async function loadCustomers() {
             </td>
 
             <td>
-                ₹${Number(
-                    customer.MonthlyCharges ?? 0
-                ).toFixed(2)}
+                ${chargesText}
             </td>
 
             <td>
@@ -265,26 +307,11 @@ async function loadCustomers() {
             </td>
 
             <td>
-                ${
-                    probability !== null &&
-                    probability !== undefined
-                    ? (
-                        Number(probability) * 100
-                      ).toFixed(2) + "%"
-                    : "-"
-                }
+                ${probabilityText}
             </td>
 
             <td>
-                ${
-                    customer.predicted_ltv !== null &&
-                    customer.predicted_ltv !== undefined
-                    ? "₹" +
-                      Number(
-                          customer.predicted_ltv
-                      ).toFixed(2)
-                    : "-"
-                }
+                ${ltvText}
             </td>
 
         `;
@@ -292,6 +319,111 @@ async function loadCustomers() {
         table.appendChild(row);
 
     });
+}
+
+
+// ============================================================
+// RENDER RISK CHART
+// ============================================================
+
+function renderRiskChart(riskData) {
+
+    const canvas =
+        document.getElementById("riskChart");
+
+    if (!canvas) {
+
+        console.error(
+            "riskChart canvas not found"
+        );
+
+        return;
+    }
+
+    if (typeof Chart === "undefined") {
+
+        console.error(
+            "Chart.js is not loaded"
+        );
+
+        return;
+    }
+
+
+    // Destroy previous chart when Refresh is clicked
+    if (riskChart !== null) {
+
+        riskChart.destroy();
+
+        riskChart = null;
+    }
+
+
+    riskChart = new Chart(
+        canvas,
+        {
+            type: "bar",
+
+            data: {
+
+                labels: [
+                    "High Risk",
+                    "Medium Risk",
+                    "Low Risk"
+                ],
+
+                datasets: [
+                    {
+                        label: "Customers",
+
+                        data: [
+                            Number(
+                                riskData.high_risk_customers
+                            ),
+
+                            Number(
+                                riskData.medium_risk_customers
+                            ),
+
+                            Number(
+                                riskData.low_risk_customers
+                            )
+                        ]
+                    }
+                ]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0
+                        }
+
+                    }
+
+                },
+
+                plugins: {
+
+                    legend: {
+                        display: true
+                    }
+
+                }
+
+            }
+        }
+    );
 }
 
 
@@ -332,11 +464,6 @@ async function loadDashboard() {
 
 
 // ============================================================
-// INITIAL LOAD
-// ============================================================
-
-loadDashboard();
-// ============================================================
 // SEARCH CUSTOMER
 // ============================================================
 
@@ -376,6 +503,35 @@ async function searchCustomer() {
             );
 
 
+        const probabilityText =
+            customer.churn_probability !== null &&
+            customer.churn_probability !== undefined
+                ? `${(
+                    Number(
+                        customer.churn_probability
+                    ) * 100
+                ).toFixed(2)}%`
+                : "-";
+
+
+        const ltvText =
+            customer.predicted_ltv !== null &&
+            customer.predicted_ltv !== undefined
+                ? `₹${Number(
+                    customer.predicted_ltv
+                ).toFixed(2)}`
+                : "-";
+
+
+        const chargesText =
+            customer.MonthlyCharges !== null &&
+            customer.MonthlyCharges !== undefined
+                ? `₹${Number(
+                    customer.MonthlyCharges
+                ).toFixed(2)}`
+                : "-";
+
+
         details.innerHTML = `
 
             <div class="customer-detail-grid">
@@ -387,12 +543,14 @@ async function searchCustomer() {
                     </span>
                 </div>
 
+
                 <div>
                     <strong>Contract</strong>
                     <span>
                         ${customer.Contract ?? "-"}
                     </span>
                 </div>
+
 
                 <div>
                     <strong>Tenure</strong>
@@ -401,14 +559,14 @@ async function searchCustomer() {
                     </span>
                 </div>
 
+
                 <div>
                     <strong>Monthly Charges</strong>
                     <span>
-                        ₹${Number(
-                            customer.MonthlyCharges ?? 0
-                        ).toFixed(2)}
+                        ${chargesText}
                     </span>
                 </div>
+
 
                 <div>
                     <strong>Actual Churn</strong>
@@ -417,6 +575,7 @@ async function searchCustomer() {
                     </span>
                 </div>
 
+
                 <div>
                     <strong>Predicted Churn</strong>
                     <span>
@@ -424,38 +583,32 @@ async function searchCustomer() {
                     </span>
                 </div>
 
+
                 <div>
                     <strong>Churn Probability</strong>
                     <span class="${risk.className}">
-                        ${
-                            customer.churn_probability !== null &&
-                            customer.churn_probability !== undefined
-                            ? (
-                                Number(
-                                    customer.churn_probability
-                                ) * 100
-                              ).toFixed(2) + "%"
-                            : "-"
-                        }
+                        ${probabilityText}
                     </span>
                 </div>
+
+
+                <div>
+                    <strong>Risk Level</strong>
+                    <span class="${risk.className}">
+                        ${risk.label}
+                    </span>
+                </div>
+
 
                 <div>
                     <strong>Predicted LTV</strong>
                     <span>
-                        ${
-                            customer.predicted_ltv !== null &&
-                            customer.predicted_ltv !== undefined
-                            ? "₹" +
-                              Number(
-                                  customer.predicted_ltv
-                              ).toFixed(2)
-                            : "-"
-                        }
+                        ${ltvText}
                     </span>
                 </div>
 
             </div>
+
         `;
 
     } catch (err) {
@@ -466,5 +619,33 @@ async function searchCustomer() {
             "<p class='error'>" +
             "Customer not found or API error." +
             "</p>";
+
     }
 }
+
+
+// ============================================================
+// SEARCH USING ENTER KEY
+// ============================================================
+
+document
+    .getElementById("customerSearch")
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+
+                searchCustomer();
+
+            }
+
+        }
+    );
+
+
+// ============================================================
+// INITIAL LOAD
+// ============================================================
+
+loadDashboard();
