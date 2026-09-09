@@ -1853,21 +1853,45 @@
                 }
 
 
+                // Support both nested API responses ({ prediction: {...} })
+                // and flat API responses for compatibility.
+                const prediction =
+                    data.prediction || data;
+
+                const customerId =
+                    data.customerid ||
+                    prediction.customerid ||
+                    createPayload().customerID;
+
+                const churnProbability =
+                    Number(prediction.churn_probability);
+
+                const riskLevel =
+                    prediction.risk_level ||
+                    (
+                        churnProbability >= 0.70
+                            ? "High"
+                            : churnProbability >= 0.40
+                                ? "Medium"
+                                : "Low"
+                    );
+
+                const predictedLTV =
+                    Number(prediction.predicted_ltv);
+
                 document.getElementById(
                     "resultCustomer"
                 ).textContent =
-                    data.customerid;
-
+                    customerId;
 
                 document.getElementById(
                     "resultProbability"
                 ).textContent =
-                    (
-                        data.churn_probability *
-                        100
-                    ).toFixed(2) +
-                    "%";
-
+                    Number.isFinite(churnProbability)
+                        ? (
+                            churnProbability * 100
+                        ).toFixed(2) + "%"
+                        : "—";
 
                 const resultRisk =
                     document.getElementById(
@@ -1875,26 +1899,25 @@
                     );
 
                 resultRisk.textContent =
-                    data.risk_level;
+                    riskLevel;
 
                 resultRisk.className =
                     "prediction-value " +
-                    data.risk_level.toLowerCase();
-
+                    String(riskLevel).toLowerCase();
 
                 document.getElementById(
                     "resultLTV"
                 ).textContent =
-                    "₹" +
-                    Number(
-                        data.predicted_ltv
-                    ).toLocaleString(
-                        "en-IN",
-                        {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }
-                    );
+                    Number.isFinite(predictedLTV)
+                        ? "₹" +
+                            predictedLTV.toLocaleString(
+                                "en-IN",
+                                {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }
+                            )
+                        : "—";
 
 
                 predictionResults.style.display =

@@ -1,0 +1,5 @@
+FROM nginx:alpine
+
+COPY test_console_single_customer.html /usr/share/nginx/html/
+
+EXPOSE 80
