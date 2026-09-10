@@ -4,8 +4,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from database import get_engine
-
+from pipeline.database import get_engine
 
 # ============================================================
 # APPLICATION
