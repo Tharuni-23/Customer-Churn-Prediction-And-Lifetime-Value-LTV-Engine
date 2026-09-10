@@ -1,702 +1,899 @@
-<div align="center">
+# Customer Churn Prediction & Lifetime Value (LTV) Engine
 
-📊 Customer Churn Prediction & LTV Engine
+An end-to-end customer analytics system that predicts **customer churn**, estimates **customer lifetime value (LTV)**, assigns a **risk level**, and makes the results available through an API, web interface, scheduled pipeline, and Metabase dashboards.
 
-Predict churn. Estimate customer value. Prioritize retention.
+---
 
-<p>
-  <img src="https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/FastAPI-API-green?logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/PostgreSQL-Neon-336791?logo=postgresql&logoColor=white" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/XGBoost-ML-red?logo=xgboost&logoColor=white" alt="XGBoost">
-  <img src="https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker&logoColor=white" alt="Docker">
-  <img src="https://img.shields.io/badge/Metabase-BI-yellow?logo=metabase&logoColor=white" alt="Metabase">
-</p>
+## Overview
 
-<p>
-  <strong>Production-oriented telecom customer analytics and prediction system</strong>
-</p>
+Customer churn is not only about identifying customers who may leave. From a business perspective, it is also important to understand **how valuable those customers are** and which customers should receive the most attention.
 
-</div>
+This project combines two machine learning models:
 
-🎯 What This Project Does
+- **XGBoost Classifier** — predicts churn probability
+- **XGBoost Regressor** — predicts customer lifetime value
 
-This project combines customer analytics, machine learning, automated change detection, scheduled inference, PostgreSQL storage, FastAPI, Docker, and Metabase to support customer-retention decisions.
+The predictions are stored back in PostgreSQL and can then be accessed through the API or visualized in Metabase.
 
-The system answers two core questions:
+The system also includes an automated scheduler that periodically checks for changed customer records and runs the prediction pipeline.
 
-Business Question
+### Core workflow
 
-Prediction
+```mermaid
+flowchart TD
+    A[(PostgreSQL / Neon)] --> B[Change Tracker]
+    B --> C[Preprocessing]
+    C --> D[XGBoost Churn Classifier]
+    C --> E[XGBoost LTV Regressor]
+    D --> F[Churn Probability]
+    E --> G[Predicted LTV]
+    F --> H[Risk Level]
+    G --> H
+    H --> I[(Save Predictions to Neon)]
+    I --> J[FastAPI]
+    J --> K[Frontend]
+    I --> L[Metabase Dashboards]
+```
 
-Which customers are likely to churn?
+---
 
-Churn probability + risk level
+## Features
 
-What is a customer worth?
+### Churn Prediction
 
-Predicted Customer Lifetime Value (LTV)
+The churn model returns:
 
-🔄 Business Flow
+- Churn prediction: `Yes` / `No`
+- Churn probability
 
+A probability threshold of **0.50** is used for the final churn classification.
+
+```text
+Probability >= 0.50  →  Churn = Yes
+Probability <  0.50  →  Churn = No
+```
+
+### Customer Lifetime Value
+
+The LTV model estimates the expected value of a customer and provides a numerical LTV prediction that can be used alongside churn risk.
+
+### Risk Classification
+
+The system combines the prediction results into a simple business-facing risk level:
+
+```text
+High
+Medium
+Low
+```
+
+### Incremental Processing
+
+The pipeline tracks the last processed point in time and checks for customers that have been updated since the previous run.
+
+This avoids unnecessarily processing the entire customer dataset on every execution.
+
+### Automated Execution
+
+The scheduler runs the prediction pipeline approximately every **5 minutes**.
+
+### Data Flow
+
+The following diagram shows how a customer record moves through the system, from the source database to machine-learning predictions and finally to the applications used for customer analysis and business decisions.
+
+```mermaid
+flowchart LR
+    A[("Customer Data<br/>Neon PostgreSQL")]
+    B["Change Detection<br/>updated_at + checkpoint"]
+    C["Preprocessing<br/>Encoding + Transformation + Validation"]
+
+    A -->|"New / updated records"| B
+    B -->|"Changed customers"| C
+
+    C --> D["XGBoost<br/>Churn Classifier"]
+    C --> E["XGBoost<br/>LTV Regressor"]
+
+    D --> F["Churn Probability<br/>+ Churn Yes / No"]
+    E --> G["Predicted LTV"]
+
+    F --> H["Risk Assessment"]
+    G --> H
+
+    H --> I[("Prediction Results<br/>Neon PostgreSQL")]
+
+    I --> J["FastAPI"]
+    J --> K["Frontend"]
+
+    I --> L["Metabase"]
+    L --> M["Churn Risk"]
+    L --> N["LTV & Value"]
+    L --> O["Retention Strategy"]
+
+    K --> P["Customer / Analyst View"]
+    M --> Q["Manager Insights"]
+    N --> Q
+    O --> Q
+
+    classDef data fill:#eaf2ff,stroke:#4f78c4,stroke-width:1.5px,color:#172033;
+    classDef process fill:#f7f7f8,stroke:#8b95a5,stroke-width:1.5px,color:#202733;
+    classDef ml fill:#f2ecff,stroke:#8064b8,stroke-width:1.5px,color:#241c35;
+    classDef output fill:#edf8f3,stroke:#4f9470,stroke-width:1.5px,color:#173024;
+    classDef app fill:#fff6e8,stroke:#c18b3f,stroke-width:1.5px,color:#3a2913;
+
+    class A,I data;
+    class B,C,H process;
+    class D,E,F,G ml;
+    class J,K,L,M,N,O output;
+    class P,Q app;
+```
+
+### Data-flow sequence
+
+```text
 Customer Data
-     ↓
-Neon PostgreSQL
-     ↓
+      ↓
 Change Detection
-     ↓
-5-Minute Scheduler
-     ↓
-Preprocessing & Validation
-     ↓
-┌─────────────────────┬─────────────────────┐
-│                     │                     │
-▼                     ▼                     │
-Churn Model       LTV Model                │
-│                     │                     │
-└──────────────┬──────┘                     │
-               ▼                            │
-      Predictions Written Back              │
-               ▼                            │
-        Neon PostgreSQL                     │
-               ▼                            │
-           Metabase                         │
-               ▼                            │
-      Management Decisions                  │
+      ↓
+Preprocessing
+      ↓
+ ┌───────────────┬───────────────┐
+ ↓                               ↓
+Churn Model                    LTV Model
+ ↓                               ↓
+Churn Probability              Predicted LTV
+ └───────────────┬───────────────┘
+                 ↓
+          Risk Assessment
+                 ↓
+        Prediction Storage
+                 ↓
+        ┌────────┴────────┐
+        ↓                 ↓
+     FastAPI           Metabase
+        ↓                 ↓
+    Frontend       Manager Dashboards
+```
 
-🧠 Core Capabilities
+The key point is that **both ML outputs are brought together before storage**, allowing churn risk and customer value to be analyzed together rather than as separate predictions.
 
-<table>
-<tr>
-<td width="50%">
+# API
 
-🔴 Churn Prediction
+FastAPI provides endpoints for health checks, test data generation, and single-customer predictions.
 
-XGBoost classification
+### Dashboard
 
-Churn probability
+Metabase is connected directly to the PostgreSQL database and is used for manager-level analysis.
 
-0.50 classification threshold
+---
 
-High / Medium / Low risk interpretation
+# Project Structure
 
-</td>
-<td width="50%">
-
-💰 LTV Prediction
-
-XGBoost regression
-
-Predicted customer lifetime value
-
-Customer-value segmentation
-
-Risk + value prioritization
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-⚙️ Automated Processing
-
-Incremental change detection
-
-Five-minute scheduler
-
-Automatic prediction write-back
-
-Processing checkpoint
-
-</td>
-<td>
-
-🌐 Application Layer
-
-FastAPI
-
-Single-customer prediction
-
-Dockerized API
-
-Browser-based prediction console
-
-</td>
-</tr>
-</table>
-
-🛠️ Technology Stack
-
-Layer
-
-Technology
-
-Programming
-
-Python
-
-Data Processing
-
-Pandas, NumPy
-
-Machine Learning
-
-XGBoost, scikit-learn
-
-Database
-
-PostgreSQL
-
-Managed Database
-
-Neon PostgreSQL
-
-Database Access
-
-SQLAlchemy
-
-API
-
-FastAPI + Uvicorn
-
-Frontend
-
-HTML, CSS, JavaScript
-
-BI / Dashboards
-
-Metabase
-
-Containerization
-
-Docker + Docker Compose
-
-Configuration
-
-Environment variables
-
-🏗️ Architecture
-
-                         ┌──────────────────────────────┐
-                         │     Customer Console         │
-                         │ test_console_single_customer │
-                         └──────────────┬───────────────┘
-                                        │
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │       FastAPI Container      │
-                         │           Port 8000          │
-                         └──────────────┬───────────────┘
-                                        │
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │      Neon PostgreSQL         │
-                         │       public.customers      │
-                         └──────────────┬───────────────┘
-                                        │
-                              Change Detection
-                                        │
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │     Scheduler Container      │
-                         │        Every 5 minutes       │
-                         └──────────────┬───────────────┘
-                                        │
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │      ML Pipeline Container   │
-                         │     main.py + preprocessing  │
-                         └──────────────┬───────────────┘
-                                        │
-                            ┌───────────┴───────────┐
-                            │                       │
-                            ▼                       ▼
-                   ┌────────────────┐      ┌────────────────┐
-                   │ Churn XGBoost  │      │   LTV XGBoost  │
-                   └────────┬───────┘      └────────┬───────┘
-                            │                       │
-                            └───────────┬───────────┘
-                                        ▼
-                              Neon PostgreSQL
-                                        │
-                                        ▼
-                                   Metabase
-
-📁 Project Structure
-
+```text
 Customer-Churn-Prediction-And-Lifetime-Value-LTV-Engine/
 │
 ├── README.md
 ├── requirements.txt
-├── Dockerfile
-├── Dockerfile.frontend
 ├── docker-compose.yml
 ├── .dockerignore
 ├── .gitignore
-├── .env.example
+├── .env
 │
-├── main.py
-├── scheduler.py
-├── change_tracker.py
-├── database.py
-├── preprocessing.py
-├── final_model.py
-├── ltv_model.py
-├── test_api_single_customer.py
-├── test_data_generator.py
-├── dashboard_api.py
+├── backend/
+│   ├── test_api_single_customer.py
+│   └── dashboard_api.py
 │
-├── xgboost_model.json
-├── ltv_model.json
-├── preprocessing_package.pkl
+├── pipeline/
+│   ├── main.py
+│   ├── scheduler.py
+│   ├── change_tracker.py
+│   └── database.py
 │
-├── test_console_single_customer.html
+├── preprocessing/
+│   ├── preprocessing.py
+│   └── preprocessing_package.pkl
 │
-├── customer-interface/
+├── models/
+│   ├── final_model.py
+│   ├── ltv_model.py
+│   ├── xgboost_model.json
+│   └── ltv_model.json
+│
+├── frontend/
+│   ├── test_console_single_customer.html
+│   │
+│   └── customer-interface/
+│       ├── manager_dashboard.html
+│       ├── manager_dashboard.css
+│       └── manager_dashboard.js
+│
+├── testing/
+│   └── test_data_generator.py
+│
+├── docker/
+│   ├── Dockerfile
+│   └── Dockerfile.frontend
 │
 └── docs/
-    └── technical-documentation.md
+```
 
-Runtime files such as .env and pipeline_state.json should not be committed.
+---
 
-🗄️ Neon PostgreSQL
+# How the Project Works
 
-The application uses Neon PostgreSQL as its persistent database.
+## 1. Customer Data
 
-Environment configuration
+Customer information is stored in **PostgreSQL through Neon**.
 
-Create a local .env file:
+The database acts as the main data source for the prediction pipeline.
 
-DB_USER=your_neon_user
-DB_PASSWORD=your_neon_password
-DB_HOST=your_neon_host
-DB_PORT=5432
-DB_NAME=neondb
+---
 
-Main table
+## 2. Change Detection
 
-public.customers
+The pipeline checks the `updated_at` information of customer records and compares it with the previous processing checkpoint.
 
-Important prediction columns:
+The checkpoint is maintained locally by:
 
-churn
-churn_probability
-predicted_ltv
-prediction_at
-
-🤖 Machine Learning
-
-Churn Model
-
-The churn model produces:
-
-churn_probability
-
-Classification:
-
-Probability >= 0.50  → Churn = Yes
-Probability < 0.50   → Churn = No
-
-Risk interpretation
-
-High Risk     >= 70%
-Medium Risk   >= 40%
-Low Risk      < 40%
-
-LTV Model
-
-The LTV model produces:
-
-predicted_ltv
-
-This value is used alongside churn probability to prioritize retention actions.
-
-🔁 Incremental Prediction Pipeline
-
-The pipeline is designed to process changed customers, rather than repeatedly processing the full table.
-
-1. Create processing window
-2. Fetch changed customers
-3. Preprocess customer records
-4. Validate feature matrix
-5. Generate churn prediction
-6. Generate LTV prediction
-7. Write predictions back to Neon
-8. Update processing checkpoint
-
-Runtime checkpoint:
-
+```text
 pipeline_state.json
+```
 
-⏱️ Scheduler
+The result is a set of customers that need to be processed.
 
-The scheduler runs the processing pipeline on a five-minute interval.
+```mermaid
+flowchart LR
+    A[Previous Checkpoint] --> B[Query updated_at]
+    B --> C[New / Updated Customers]
+    C --> D[Prediction Pipeline]
+    D --> E[Update Checkpoint]
+    E -. next run .-> B
+```
 
-Once Docker is started, the scheduler runs in the background.
+---
 
-You do not manually run the scheduler every five minutes.
+## 3. Preprocessing
 
-Docker starts
-     ↓
-Scheduler starts
-     ↓
-Wait / process every 5 minutes
-     ↓
-Check for changed customers
-     ↓
-Run ML pipeline
-     ↓
-Write predictions to Neon
-     ↓
-Repeat
+Raw customer data is transformed into the format expected by the trained models.
 
-🌐 FastAPI
+The preprocessing stage handles the required:
 
-The API exposes the prediction service.
+- categorical encoding
+- numerical conversion
+- feature transformation
+- feature validation
 
-Base URL
+The saved preprocessing package is:
 
-http://127.0.0.1:8000
+```text
+preprocessing/preprocessing_package.pkl
+```
 
-Swagger UI
+Keeping the same preprocessing configuration during inference helps ensure that the prediction input matches the model's expected feature structure.
 
-http://127.0.0.1:8000/docs
+```mermaid
+flowchart LR
+    A[Raw Customer Data]
+    A --> B[Encoding]
+    B --> C[Numerical Conversion]
+    C --> D[Categorical Transformation]
+    D --> E[Feature Validation]
+    E --> F[Model-Ready Features]
+```
 
-Main endpoint
+---
 
-POST /predict-single-customer
+## 4. Churn Prediction
 
-The endpoint accepts one customer record, applies the project's preprocessing/model pipeline, produces churn and LTV predictions, and writes the prediction result back to Neon PostgreSQL.
+The churn model is stored in:
 
-🖥️ Customer Prediction Console
+```text
+models/xgboost_model.json
+```
 
-The single-customer console is:
+It estimates the probability that a customer will churn.
 
-test_console_single_customer.html
+```mermaid
+flowchart LR
+    A[Customer Features] --> B[Preprocessing]
+    B --> C[XGBoost Classifier]
+    C --> D[Churn Probability]
+    D --> E{Probability >= 0.50?}
+    E -->|Yes| F[Churn = Yes]
+    E -->|No| G[Churn = No]
+```
 
-When served through Docker:
+---
 
-http://127.0.0.1:5500/test_console_single_customer.html
+## 5. LTV Prediction
 
-The console displays:
+The lifetime value model is stored in:
 
-Customer ID
+```text
+models/ltv_model.json
+```
 
-Churn probability
+It predicts a numerical customer lifetime value from the processed feature set.
 
-Risk level
+```mermaid
+flowchart LR
+    A[Customer Features] --> B[Preprocessing]
+    B --> C[XGBoost LTV Regressor]
+    C --> D[Predicted Customer Lifetime Value]
+```
 
+---
+
+## 6. Risk Level
+
+The prediction output is presented with a business-friendly risk level:
+
+```text
+Churn
+Churn Probability
 Predicted LTV
-
-Database save confirmation
-
-🐳 Docker
-
-The complete application is containerized into four services:
-
-Service
-
-Responsibility
-
-api
-
-FastAPI prediction API
-
-churn-pipeline
-
-ML processing
-
-scheduler
-
-Five-minute automatic execution
-
-frontend
-
-Nginx-served customer console
-
-Prerequisites
-
-docker --version
-docker compose version
-
-Build
-
-docker compose build
-
-Start
-
-docker compose up -d
-
-Check containers
-
-docker compose ps
-
-Expected services:
-
-churn-ltv-api
-churn-ltv-pipeline
-churn-ltv-scheduler
-churn-ltv-frontend
-
-View logs
-
-All:
-
-docker compose logs -f
-
-API:
-
-docker compose logs -f api
-
-Pipeline:
-
-docker compose logs -f churn-pipeline
-
-Scheduler:
-
-docker compose logs -f scheduler
-
-Stop
-
-docker compose down
-
-📊 Metabase Management Dashboards
-
-Metabase connects directly to the Neon PostgreSQL database.
-
-The project uses three dashboards with distinct business purposes.
-
-01 — Customer Churn Risk Dashboard
-
-What is happening?
-
-Focuses on:
-
-Overall churn situation
-
-Customer risk distribution
-
-Churn segmentation
-
-Contract / service / payment / tenure analysis
-
-Manager-level filters
-
-02 — Customer LTV & Value Dashboard
-
-What are our customers worth?
-
-Focuses on:
-
-Predicted LTV
-
-Customer-value segments
-
-Revenue exposure
-
-High-value customer analysis
-
-Risk + value relationships
-
-03 — Churn Insights & Retention Strategy
-
-What should management do?
-
-Focuses on:
-
-Churn-risk patterns
-
-Customer behavior signals
-
-Retention opportunities
-
-Management observations
-
-Recommended actions
-
-Things to avoid
-
-Continuous improvement
-
-Business narrative
-
-Dashboard 1
-"What is happening?"
-        ↓
-Dashboard 2
-"What is it worth?"
-        ↓
-Dashboard 3
-"What should we do?"
-
-🧪 Controlled Test Data
-
-The project includes a controlled test-data generator.
-
-One test cycle creates:
-
-150 existing-customer updates
-+
-50 new customer inserts
-=
-200 affected records
-
-Generated customer IDs use:
-
-TEST-GEN-
-
-This functionality is intended for development/testing and should not be used to create artificial production customer activity.
-
-🔐 Security
-
-Never commit real credentials to GitHub.
-
-Keep these local:
-
-.env
-pipeline_state.json
-
-Use:
-
-.env.example
-
-for placeholder configuration.
+Risk Level
+```
 
 Example:
 
-DB_USER=your_neon_user
-DB_PASSWORD=your_neon_password
-DB_HOST=your_neon_host
-DB_PORT=5432
-DB_NAME=neondb
+```text
+Customer ID: CUSTOMER-001
 
-🌿 Git Branches
+Churn: Yes
+Churn Probability: 82%
+Predicted LTV: 18450
+Risk Level: High
+```
 
-Branch
+---
 
-Purpose
+## 7. Save Results
 
-main
+The prediction results are written back to PostgreSQL.
 
-Stable integrated project
+This creates a central prediction dataset that can be used by:
 
-machine-learning
+- the API
+- the frontend
+- Metabase
 
-ML experimentation and model development
+---
 
-customer-portal
+# API
 
-Customer-facing frontend
+The backend is built with **FastAPI**.
 
-integration-pipeline
+Main file:
 
-Integrated database, ML pipeline, scheduler, API and testing
+```text
+backend/test_api_single_customer.py
+```
 
-🚀 Quick Start
+### Available endpoints
 
-1. Clone
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/` | API root |
+| GET | `/health` | Health check |
+| POST | `/generate-test-data` | Generate test records |
+| POST | `/predict-single-customer` | Generate a prediction for a customer |
 
-git clone https://github.com/Tharuni-23/Customer-Churn-Prediction-And-Lifetime-Value-LTV-Engine.git
-cd Customer-Churn-Prediction-And-Lifetime-Value-LTV-Engine
+### API URL
 
-2. Configure environment
+```text
+http://127.0.0.1:8000
+```
 
-Create .env using the Neon PostgreSQL credentials.
+### Swagger documentation
 
-3. Build containers
-
-docker compose build
-
-4. Start application
-
-docker compose up -d
-
-5. Verify
-
-docker compose ps
-
-6. Open frontend
-
-http://127.0.0.1:5500/test_console_single_customer.html
-
-7. Open API documentation
-
+```text
 http://127.0.0.1:8000/docs
+```
 
-8. Open Metabase
+### Health check
 
-Use your configured Metabase instance connected to Neon PostgreSQL.
+```text
+http://127.0.0.1:8000/health
+```
 
-🔄 End-to-End Demonstration
+### Example prediction response
 
-1. Start Docker
-        ↓
-2. Open customer console
-        ↓
-3. Submit / update customer
-        ↓
-4. Customer data reaches Neon
-        ↓
-5. Scheduler detects the change
-        ↓
-6. ML pipeline processes the customer
-        ↓
-7. Churn probability is generated
-        ↓
-8. Predicted LTV is generated
-        ↓
-9. Predictions are written back to Neon
-        ↓
-10. Metabase reads updated data
+```json
+{
+  "success": true,
+  "customerid": "CUSTOMER-001",
+  "prediction": {
+    "churn": "Yes",
+    "churn_probability": 0.82,
+    "predicted_ltv": 18450,
+    "risk_level": "High"
+  },
+  "saved_to_database": true
+}
+```
 
-📈 Business Outcome
+---
 
-The system is designed to help management:
+# Frontend
 
-<table>
-<tr>
-<td>🎯 Identify customers at risk</td>
-<td>💰 Understand customer value</td>
-</tr>
-<tr>
-<td>🔎 Investigate churn patterns</td>
-<td>📌 Prioritize retention efforts</td>
-</tr>
-<tr>
-<td>⚙️ Automate prediction processing</td>
-<td>📊 Monitor decisions through dashboards</td>
-</tr>
-</table>
+The customer prediction interface is located at:
 
-⚠️ Important Analytical Note
+```text
+frontend/test_console_single_customer.html
+```
 
-Model predictions and segment-level differences are decision-support signals.
+The frontend communicates with the FastAPI backend and displays the prediction returned by the API.
 
-A segment with higher churn probability should be investigated further; a relationship in the data should not automatically be interpreted as proof that a particular customer attribute directly causes churn.
+```mermaid
+flowchart LR
+    A[Customer Input] --> B[Frontend]
+    B --> C[FastAPI]
+    C --> D[Prediction]
+    D --> B
+    B --> E[Display Result]
+```
 
-👥 Team Project
+### Frontend URL
 
-This repository represents a collaborative implementation covering:
+```text
+http://127.0.0.1:5500
+```
 
-Data processing
+---
 
-Machine learning
+# Automated Pipeline
 
-Database integration
+The main prediction workflow is implemented in:
 
-API development
+```text
+pipeline/main.py
+```
 
-Automated inference
+The scheduler is located at:
 
-Dashboarding
+```text
+pipeline/scheduler.py
+```
 
-Docker deployment
+The scheduler invokes the pipeline approximately every 5 minutes.
 
-<div align="center">
+## Pipeline Architecture
 
-🚀 Predict → Prioritize → Retain
+```mermaid
+flowchart TD
+    A[Scheduler] --> B[pipeline.main.run_pipeline()]
+    B --> C[Read Checkpoint]
+    C --> D[Find Changed Customers]
+    D --> E[Fetch Customer Data]
+    E --> F[Preprocessing]
+    F --> G[XGBoost Churn Model]
+    F --> H[XGBoost LTV Model]
+    G --> I[Churn Probability + Churn]
+    H --> J[Predicted LTV]
+    I --> K[Risk Assessment]
+    J --> K
+    K --> L[Write Predictions to Neon]
+    L --> M[Update Checkpoint]
+    M -. next scheduled run .-> A
+```
 
-Customer Churn Prediction & Lifetime Value Engine
+### Scheduler Flow
 
-</div>
+```text
+Scheduler starts
+      ↓
+Initial wait
+      ↓
+Run prediction pipeline
+      ↓
+Wait approximately 5 minutes
+      ↓
+Run pipeline again
+      ↓
+Repeat
+```
+
+---
+
+# Test Data
+
+Controlled test data can be generated through:
+
+```text
+testing/test_data_generator.py
+```
+
+The current setup creates:
+
+```text
+150 existing customer updates
++
+50 new customer records
+=
+200 changed records
+```
+
+Generated records use the prefix:
+
+```text
+TEST-GEN-
+```
+
+The test-data generator is separate from the prediction pipeline. It changes database records; the pipeline then detects those changes and processes them.
+
+---
+
+# Metabase Dashboards
+
+Metabase connects directly to the Neon PostgreSQL database.
+
+The project includes three manager-facing dashboards.
+
+### 1. Customer Churn Risk Dashboard
+
+**Question:** What is happening?
+
+Provides an overview of current customer churn risk and the distribution of risk across the customer base.
+
+### 2. Customer LTV & Value Dashboard
+
+**Question:** What is it worth?
+
+Focuses on predicted customer lifetime value and the financial importance of customers.
+
+### 3. Churn Insights & Retention Strategy
+
+**Question:** What should we do?
+
+Connects churn risk and customer value so that attention can be prioritized toward customers who are both valuable and at elevated risk of leaving.
+
+```mermaid
+flowchart LR
+    A[(Neon PostgreSQL)] --> B[Customer Churn Risk Dashboard]
+    A --> C[Customer LTV & Value Dashboard]
+    A --> D[Churn Insights & Retention Strategy]
+
+    B --> E[What is happening?]
+    C --> F[What is it worth?]
+    D --> G[What should we do?]
+```
+
+---
+
+# Business Decision Framework
+
+The central business use case is to combine churn risk with customer value rather than looking at either measure in isolation.
+
+| Situation | Suggested Business Attention |
+|---|---|
+| Low churn + Low value | Lower priority |
+| Low churn + High value | Maintain relationship |
+| High churn + Low value | Monitor and evaluate |
+| **High churn + High value** | **Highest retention priority** |
+
+The most important segment is:
+
+```text
+High churn + High value
+```
+
+because these customers combine a high probability of leaving with significant financial value.
+
+---
+
+# Docker
+
+The project is containerized using Docker Compose.
+
+There are **three services**:
+
+```mermaid
+flowchart TB
+    A[Docker Compose] --> B[API Service]
+    A --> C[Scheduler Service]
+    A --> D[Frontend Service]
+
+    B --> E[FastAPI :8000]
+    C --> F[Pipeline Runner]
+    D --> G[Nginx :5500]
+
+    E --> H[(Neon PostgreSQL)]
+    F --> H
+    G --> E
+```
+
+### API service
+
+Runs the FastAPI application.
+
+```text
+churn-ltv-api
+```
+
+### Scheduler service
+
+Runs the automated prediction scheduler.
+
+```text
+churn-ltv-scheduler
+```
+
+### Frontend service
+
+Serves the frontend through Nginx.
+
+```text
+churn-ltv-frontend
+```
+
+There is no separate pipeline container because the scheduler directly executes the pipeline.
+
+---
+
+# Deployment Architecture
+
+The application runs locally through **Docker Compose**, while **Neon PostgreSQL** provides the shared cloud database. **Metabase** connects to Neon for business analytics, and the local FastAPI service provides prediction access to the frontend.
+
+```mermaid
+flowchart TB
+    subgraph LOCAL["Local Machine"]
+        direction TB
+
+        subgraph DOCKER["Docker Compose"]
+            direction LR
+
+            FE["Frontend Container<br/>Nginx<br/>Port 5500"]
+            API["API Container<br/>FastAPI<br/>Port 8000"]
+            SCH["Scheduler Container<br/>Python Scheduler<br/>~5 min"]
+        end
+
+        BROWSER["Browser"]
+    end
+
+    NEON[("Neon PostgreSQL<br/>Customer + Prediction Data")]
+    MB["Metabase<br/>Manager Dashboards"]
+
+    BROWSER -->|"HTTP :5500"| FE
+    FE -->|"API requests<br/>HTTP :8000"| API
+
+    API -->|"Read / write customer data<br/>and predictions"| NEON
+    SCH -->|"Run prediction pipeline"| NEON
+
+    MB -->|"SQL connection"| NEON
+
+    SCH -.->|"pipeline.main.run_pipeline()"| API
+```
+
+### Deployment flow
+
+```text
+Local Machine
+     │
+     ├── Docker Compose
+     │      ├── Frontend → Nginx → :5500
+     │      ├── API      → FastAPI → :8000
+     │      └── Scheduler → Prediction Pipeline
+     │
+     └───────────────────────────────┐
+                                     │
+                                     ▼
+                              Neon PostgreSQL
+                                     │
+                                     ▼
+                                  Metabase
+```
+
+### Service responsibilities
+
+| Component | Runs Where | Responsibility |
+|---|---|---|
+| Frontend | Local Docker container | Serves the browser interface through Nginx |
+| FastAPI | Local Docker container | Handles prediction requests and API operations |
+| Scheduler | Local Docker container | Executes the prediction pipeline approximately every 5 minutes |
+| Neon PostgreSQL | Cloud | Stores customer and prediction data |
+| Metabase | BI layer | Reads Neon data and provides manager dashboards |
+
+# Running the Project with Docker
+
+### 1. Build the containers
+
+```bash
+docker compose build --no-cache
+```
+
+### 2. Start the application
+
+```bash
+docker compose up -d
+```
+
+### 3. Check the containers
+
+```bash
+docker compose ps
+```
+
+Expected services:
+
+```text
+churn-ltv-api
+churn-ltv-scheduler
+churn-ltv-frontend
+```
+
+### 4. View logs
+
+API:
+
+```bash
+docker compose logs api
+```
+
+Scheduler:
+
+```bash
+docker compose logs scheduler
+```
+
+Frontend:
+
+```bash
+docker compose logs frontend
+```
+
+### 5. Stop the application
+
+```bash
+docker compose down
+```
+
+---
+
+# Running Without Docker
+
+### Start the API
+
+```bash
+uvicorn backend.test_api_single_customer:app --host 127.0.0.1 --port 8000
+```
+
+### Start the Frontend
+
+```bash
+npx http-server frontend -p 5500
+```
+
+### Start the Scheduler
+
+```bash
+python -m pipeline.scheduler
+```
+
+---
+
+# Application URLs
+
+| Application | URL |
+|---|---|
+| Frontend | `http://127.0.0.1:5500` |
+| API | `http://127.0.0.1:8000` |
+| Swagger | `http://127.0.0.1:8000/docs` |
+| Health Check | `http://127.0.0.1:8000/health` |
+
+---
+
+# Role of Each Major Component
+
+| Component | Responsibility |
+|---|---|
+| `backend/` | API endpoints and prediction access |
+| `pipeline/` | Coordinates data retrieval, change detection, prediction, and storage |
+| `preprocessing/` | Transforms raw customer records into model-ready features |
+| `models/` | Stores churn and LTV model artifacts and supporting code |
+| `frontend/` | Browser-based customer prediction interface |
+| `testing/` | Generates controlled test records |
+| `docker/` | Container build definitions |
+| `docs/` | Supporting project documentation |
+
+---
+
+# Configuration
+
+Database configuration is loaded through environment variables.
+
+Example:
+
+```text
+DB_USER=...
+DB_PASSWORD=...
+DB_HOST=...
+DB_PORT=5432
+DB_NAME=...
+```
+
+The application uses PostgreSQL through SQLAlchemy and `psycopg2`.
+
+For deployment or public repositories, database credentials should be kept outside source control and supplied through environment variables or deployment secrets.
+
+---
+
+# Tech Stack
+
+```text
+Python
+Pandas
+NumPy
+XGBoost
+Scikit-learn
+PostgreSQL
+Neon
+SQLAlchemy
+psycopg2
+FastAPI
+Uvicorn
+HTML / CSS / JavaScript
+Metabase
+Docker
+Docker Compose
+Git / GitHub
+```
+
+---
+
+# End-to-End Flow
+
+```mermaid
+flowchart TD
+    A[(Customer Data<br/>Neon PostgreSQL)]
+    A --> B[Change Detection]
+    B --> C[Preprocessing]
+
+    C --> D[XGBoost Churn Classifier]
+    C --> E[XGBoost LTV Regressor]
+
+    D --> F[Churn Probability]
+    D --> G[Churn Yes / No]
+    E --> H[Predicted LTV]
+
+    F --> I[Risk Assessment]
+    G --> I
+    H --> I
+
+    I --> J[(Save Prediction Results<br/>to Neon)]
+
+    J --> K[FastAPI]
+    K --> L[Frontend]
+
+    J --> M[Metabase]
+    M --> N[Churn Risk]
+    M --> O[LTV & Value]
+    M --> P[Retention Strategy]
+
+    Q[Scheduler<br/>Every ~5 Minutes] --> B
+```
+
+---
+
+# Final Outcome
+
+The project connects machine learning with the operational pieces required to use its predictions:
+
+**data storage → preprocessing → incremental processing → prediction → risk assessment → automation → API → frontend → business intelligence**
+
+The complete business flow is:
+
+```text
+DATA
+  ↓
+PREDICTION
+  ↓
+VALUE
+  ↓
+RISK
+  ↓
+INSIGHT
+  ↓
+ACTION
+```
+
+The result is an end-to-end **Customer Churn Prediction & Lifetime Value Engine** designed to turn customer-level data into actionable retention intelligence.
