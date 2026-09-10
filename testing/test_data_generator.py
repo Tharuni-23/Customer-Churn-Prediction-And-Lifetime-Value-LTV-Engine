@@ -24,7 +24,7 @@ import pandas as pd
 
 from sqlalchemy import text
 
-import database as db
+from pipeline import database as db
 
 
 # ============================================================
