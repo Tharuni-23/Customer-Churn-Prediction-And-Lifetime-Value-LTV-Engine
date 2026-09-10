@@ -1,3 +1,4 @@
-
-*.pkl
+.env
+pipeline_state.json
 __pycache__/
+*.pyc
