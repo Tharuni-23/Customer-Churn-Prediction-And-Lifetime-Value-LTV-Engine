@@ -1,5 +1,5 @@
 # ============================================================
-# preprocessing.py
+# preprocessing/preprocessing.py
 #
 # Purpose:
 #   1. Build preprocessing_package.pkl ONCE
@@ -44,7 +44,7 @@ CANONICAL_COLUMNS = [
     "TotalCharges",
     "Churn",
     "TenureGroup",
-    "TotalServices"
+    "TotalServices",
 ]
 
 
@@ -56,7 +56,7 @@ BINARY_COLUMNS = [
     "Partner",
     "Dependents",
     "PhoneService",
-    "PaperlessBilling"
+    "PaperlessBilling",
 ]
 
 
@@ -67,21 +67,18 @@ SERVICE_COLUMNS = [
     "DeviceProtection",
     "TechSupport",
     "StreamingTV",
-    "StreamingMovies"
+    "StreamingMovies",
 ]
 
 
 SERVICE_COLLAPSE_MAPPING = {
     "No internet service": "No",
-    "No phone service": "No"
+    "No phone service": "No",
 }
 
 
 # ------------------------------------------------------------
 # TenureGroup mapping
-#
-# Accept both singular and plural spellings so incoming
-# PostgreSQL data does not become NaN because of a text mismatch.
 # ------------------------------------------------------------
 
 TENURE_MAPPING = {
@@ -95,7 +92,7 @@ TENURE_MAPPING = {
     "2-4 Years": 2,
 
     "4-6 Year": 3,
-    "4-6 Years": 3
+    "4-6 Years": 3,
 }
 
 
@@ -105,39 +102,36 @@ NUMERIC_MODEL_COLUMNS = [
     "MonthlyCharges",
     "TotalCharges",
     "TenureGroup",
-    "TotalServices"
+    "TotalServices",
 ]
 
 
 NUMERIC_CHARGE_COLUMNS = [
     "MonthlyCharges",
-    "TotalCharges"
+    "TotalCharges",
 ]
 
 
 ONE_HOT_COLUMNS = [
     "InternetService",
     "Contract",
-    "PaymentMethod"
+    "PaymentMethod",
 ]
 
 
 # ============================================================
-# 3. NORMALIZE COLUMN NAMES ONLY
+# 3. NORMALIZE COLUMN NAMES
 # ============================================================
 
 def normalize_columns(raw_df):
     """
-    Makes column-name matching robust.
-
-    This only normalizes column names.
-    Customer values are not modified here.
+    Normalize column names while preserving customer values.
     """
 
     df = raw_df.copy()
 
     # --------------------------------------------------------
-    # Strip spaces from column names
+    # Strip spaces
     # --------------------------------------------------------
 
     df.columns = [
@@ -172,6 +166,7 @@ def normalize_columns(raw_df):
             missing.append(canonical)
 
     if missing:
+
         raise ValueError(
             "Missing required columns:\n"
             f"{missing}\n\n"
@@ -184,8 +179,7 @@ def normalize_columns(raw_df):
     )
 
     # --------------------------------------------------------
-    # updated_at is pipeline metadata only.
-    # Never send it to the ML model.
+    # updated_at is pipeline metadata only
     # --------------------------------------------------------
 
     if "updated_at" in df.columns:
@@ -199,16 +193,23 @@ def normalize_columns(raw_df):
 
 # ============================================================
 # 4. BUILD PREPROCESSING PACKAGE
-#
-# Run this only when creating/rebuilding the package.
 # ============================================================
 
 def build_preprocessing_package(
     raw_df,
-    save_path="preprocessing_package.pkl"
+    save_path="preprocessing/preprocessing_package.pkl",
 ):
+    """
+    Build the preprocessing package from training-style data.
 
+    This function should normally be run only when the
+    preprocessing package needs to be created/rebuilt.
+    """
+
+    # --------------------------------------------------------
     # Work on a copy
+    # --------------------------------------------------------
+
     df = normalize_columns(raw_df)
 
     # --------------------------------------------------------
@@ -218,7 +219,7 @@ def build_preprocessing_package(
     data = df.drop(
         columns=[
             "customerID",
-            "Churn"
+            "Churn",
         ]
     ).copy()
 
@@ -226,12 +227,12 @@ def build_preprocessing_package(
     # Gender
     # --------------------------------------------------------
 
-    data["gender"] = data[
-        "gender"
-    ].map({
-        "Male": 1,
-        "Female": 0
-    })
+    data["gender"] = data["gender"].map(
+        {
+            "Male": 1,
+            "Female": 0,
+        }
+    )
 
     # --------------------------------------------------------
     # Binary columns
@@ -239,12 +240,12 @@ def build_preprocessing_package(
 
     for col in BINARY_COLUMNS:
 
-        data[col] = data[
-            col
-        ].map({
-            "Yes": 1,
-            "No": 0
-        })
+        data[col] = data[col].map(
+            {
+                "Yes": 1,
+                "No": 0,
+            }
+        )
 
     # --------------------------------------------------------
     # Service columns
@@ -252,26 +253,23 @@ def build_preprocessing_package(
 
     for col in SERVICE_COLUMNS:
 
-        data[col] = data[
-            col
-        ].replace(
-            SERVICE_COLLAPSE_MAPPING
+        data[col] = (
+            data[col]
+            .replace(SERVICE_COLLAPSE_MAPPING)
         )
 
-        data[col] = data[
-            col
-        ].map({
-            "Yes": 1,
-            "No": 0
-        })
+        data[col] = data[col].map(
+            {
+                "Yes": 1,
+                "No": 0,
+            }
+        )
 
     # --------------------------------------------------------
     # TenureGroup
     # --------------------------------------------------------
 
-    data["TenureGroup"] = data[
-        "TenureGroup"
-    ].map(
+    data["TenureGroup"] = data["TenureGroup"].map(
         TENURE_MAPPING
     )
 
@@ -283,19 +281,18 @@ def build_preprocessing_package(
 
         data[col] = pd.to_numeric(
             data[col],
-            errors="coerce"
+            errors="coerce",
         )
 
     # --------------------------------------------------------
     # Existing training behavior:
-    # invalid/blank charge values become 0
+    # invalid/blank charges become 0
     # --------------------------------------------------------
 
-    data[
-        NUMERIC_CHARGE_COLUMNS
-    ] = data[
-        NUMERIC_CHARGE_COLUMNS
-    ].fillna(0)
+    data[NUMERIC_CHARGE_COLUMNS] = (
+        data[NUMERIC_CHARGE_COLUMNS]
+        .fillna(0)
+    )
 
     # --------------------------------------------------------
     # One-hot encoding
@@ -304,7 +301,7 @@ def build_preprocessing_package(
     data = pd.get_dummies(
         data,
         columns=ONE_HOT_COLUMNS,
-        drop_first=True
+        drop_first=True,
     )
 
     # --------------------------------------------------------
@@ -315,11 +312,10 @@ def build_preprocessing_package(
         include="bool"
     ).columns
 
-    data[
-        bool_columns
-    ] = data[
-        bool_columns
-    ].astype(int)
+    data[bool_columns] = (
+        data[bool_columns]
+        .astype(int)
+    )
 
     # --------------------------------------------------------
     # Final numeric conversion
@@ -331,12 +327,12 @@ def build_preprocessing_package(
 
             data[col] = pd.to_numeric(
                 data[col],
-                errors="coerce"
+                errors="coerce",
             )
 
-    # --------------------------------------------------------
-    # Validation
-    # --------------------------------------------------------
+    # ========================================================
+    # VALIDATION
+    # ========================================================
 
     if data.isnull().sum().sum() > 0:
 
@@ -363,9 +359,7 @@ def build_preprocessing_package(
         )
 
     if np.isinf(
-        data.to_numpy(
-            dtype=float
-        )
+        data.to_numpy(dtype=float)
     ).sum() > 0:
 
         raise ValueError(
@@ -385,12 +379,12 @@ def build_preprocessing_package(
 
         "drop_columns": [
             "customerID",
-            "Churn"
+            "Churn",
         ],
 
         "gender_mapping": {
             "Male": 1,
-            "Female": 0
+            "Female": 0,
         },
 
         "binary_columns":
@@ -398,7 +392,7 @@ def build_preprocessing_package(
 
         "binary_mapping": {
             "Yes": 1,
-            "No": 0
+            "No": 0,
         },
 
         "service_columns":
@@ -409,7 +403,7 @@ def build_preprocessing_package(
 
         "service_mapping": {
             "Yes": 1,
-            "No": 0
+            "No": 0,
         },
 
         "tenure_mapping":
@@ -428,12 +422,12 @@ def build_preprocessing_package(
             ONE_HOT_COLUMNS,
 
         "drop_first":
-            True
+            True,
     }
 
     joblib.dump(
         preprocessing_package,
-        save_path
+        save_path,
     )
 
     print(
@@ -442,7 +436,7 @@ def build_preprocessing_package(
 
     print(
         "Feature count:",
-        len(feature_order)
+        len(feature_order),
     )
 
     print(
@@ -451,34 +445,42 @@ def build_preprocessing_package(
 
     for i, feature in enumerate(
         feature_order,
-        start=1
+        start=1,
     ):
+
         print(
             f"{i:02d}. {feature}"
         )
 
     print(
         "Saved to:",
-        save_path
+        save_path,
     )
 
     return (
         preprocessing_package,
-        data
+        data,
     )
 
 
 # ============================================================
 # 5. TRANSFORM INCOMING DATA
-#    USED BY main.py
+#    USED BY pipeline/main.py AND FASTAPI
 # ============================================================
 
 def transform(
     raw_df,
-    package
+    package,
 ):
+    """
+    Transform incoming customer data using the exact
+    preprocessing rules saved in preprocessing_package.pkl.
+    """
 
+    # --------------------------------------------------------
     # Always work on a copy
+    # --------------------------------------------------------
+
     df = normalize_columns(raw_df)
 
     # --------------------------------------------------------
@@ -487,9 +489,7 @@ def transform(
 
     drop_cols = [
         col
-        for col in package[
-            "drop_columns"
-        ]
+        for col in package["drop_columns"]
         if col in df.columns
     ]
 
@@ -501,106 +501,78 @@ def transform(
     # Gender
     # --------------------------------------------------------
 
-    data["gender"] = data[
-        "gender"
-    ].map(
-        package[
-            "gender_mapping"
-        ]
+    data["gender"] = data["gender"].map(
+        package["gender_mapping"]
     )
 
     # --------------------------------------------------------
     # Binary columns
     # --------------------------------------------------------
 
-    for col in package[
-        "binary_columns"
-    ]:
+    for col in package["binary_columns"]:
 
-        data[col] = data[
-            col
-        ].map(
-            package[
-                "binary_mapping"
-            ]
+        data[col] = data[col].map(
+            package["binary_mapping"]
         )
 
     # --------------------------------------------------------
     # Service columns
     # --------------------------------------------------------
 
-    for col in package[
-        "service_columns"
-    ]:
+    for col in package["service_columns"]:
 
-        data[col] = data[
-            col
-        ].replace(
-            package[
-                "service_collapse_mapping"
-            ]
+        data[col] = (
+            data[col]
+            .replace(
+                package["service_collapse_mapping"]
+            )
         )
 
-        data[col] = data[
-            col
-        ].map(
-            package[
-                "service_mapping"
-            ]
+        data[col] = data[col].map(
+            package["service_mapping"]
         )
 
     # --------------------------------------------------------
     # TenureGroup
     # --------------------------------------------------------
 
-    data["TenureGroup"] = data[
-        "TenureGroup"
-    ].map(
-        package[
-            "tenure_mapping"
-        ]
+    data["TenureGroup"] = data["TenureGroup"].map(
+        package["tenure_mapping"]
     )
 
     # --------------------------------------------------------
     # Numeric model columns
     # --------------------------------------------------------
 
-    for col in package[
-        "numeric_model_columns"
-    ]:
+    for col in package["numeric_model_columns"]:
 
         if col in data.columns:
 
             data[col] = pd.to_numeric(
                 data[col],
-                errors="coerce"
+                errors="coerce",
             )
 
     # --------------------------------------------------------
     # Numeric charge columns
     # --------------------------------------------------------
 
-    for col in package[
-        "numeric_charge_columns"
-    ]:
+    for col in package["numeric_charge_columns"]:
 
         data[col] = pd.to_numeric(
             data[col],
-            errors="coerce"
+            errors="coerce",
         )
 
     data[
-        package[
-            "numeric_charge_columns"
+        package["numeric_charge_columns"]
+    ] = (
+        data[
+            package["numeric_charge_columns"]
         ]
-    ] = data[
-        package[
-            "numeric_charge_columns"
-        ]
-    ].fillna(
-        package[
-            "numeric_charge_fill_value"
-        ]
+        .fillna(
+            package["numeric_charge_fill_value"]
+        )
     )
 
     # --------------------------------------------------------
@@ -609,12 +581,8 @@ def transform(
 
     data = pd.get_dummies(
         data,
-        columns=package[
-            "one_hot_columns"
-        ],
-        drop_first=package[
-            "drop_first"
-        ]
+        columns=package["one_hot_columns"],
+        drop_first=package["drop_first"],
     )
 
     # --------------------------------------------------------
@@ -625,23 +593,20 @@ def transform(
         include="bool"
     ).columns
 
-    data[
-        bool_columns
-    ] = data[
-        bool_columns
-    ].astype(int)
+    data[bool_columns] = (
+        data[bool_columns]
+        .astype(int)
+    )
 
     # --------------------------------------------------------
     # Re-create missing dummy columns
     # AND remove unexpected columns
-    # using the saved training feature order.
+    # using saved training feature order.
     # --------------------------------------------------------
 
     data = data.reindex(
-        columns=package[
-            "feature_order"
-        ],
-        fill_value=0
+        columns=package["feature_order"],
+        fill_value=0,
     )
 
     # --------------------------------------------------------
@@ -652,9 +617,9 @@ def transform(
         np.float32
     )
 
-    # --------------------------------------------------------
-    # Final validation
-    # --------------------------------------------------------
+    # ========================================================
+    # FINAL VALIDATION
+    # ========================================================
 
     nan_columns = data.columns[
         data.isnull().any()
@@ -662,7 +627,8 @@ def transform(
 
     if nan_columns:
 
-        print("\n" + "=" * 70)
+        print()
+        print("=" * 70)
         print(
             "NaN VALUES DETECTED AFTER TRANSFORMATION"
         )
@@ -677,7 +643,7 @@ def transform(
             print(
                 data.loc[
                     data[col].isnull(),
-                    [col]
+                    [col],
                 ]
             )
 
@@ -709,7 +675,7 @@ def transform(
 
 if __name__ == "__main__":
 
-    import database as db
+    from pipeline import database as db
 
     engine = db.get_engine()
 
@@ -719,5 +685,5 @@ if __name__ == "__main__":
 
     build_preprocessing_package(
         raw_df,
-        "preprocessing_package.pkl"
+        "preprocessing/preprocessing_package.pkl",
     )
