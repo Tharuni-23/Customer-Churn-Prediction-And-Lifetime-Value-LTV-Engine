@@ -249,12 +249,16 @@ def build_preprocessing_package(
     # --------------------------------------------------------
 
     data = raw_df.drop(
-        columns=[
-            "customerID",
-            "Churn"
-        ]
-    ).copy()
-
+    columns=[
+        "customerID",
+        "Churn",
+        "churn_probability",
+        "predicted_ltv",
+        "prediction_at",
+        "updated_at"
+    ],
+    errors="ignore"
+).copy()
     print(
         "Dropped columns      : "
         "customerID, Churn "
@@ -740,12 +744,14 @@ def build_preprocessing_package(
         "feature_order":
             feature_order,
 
-        "drop_columns":
-            [
-                "customerID",
-                "Churn"
-            ],
-
+        "drop_columns": [
+    "customerID",
+    "Churn",
+    "churn_probability",
+    "predicted_ltv",
+    "prediction_at",
+    "updated_at"
+],
         "gender_mapping":
             {
                 "Male": 1,

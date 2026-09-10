@@ -5,8 +5,7 @@ import xgboost as xgb
 from datetime import datetime
 
 import database as db
-import preprocessing
-
+import preprocessing_package as preprocessing
 
 # ============================================================
 # FILES
@@ -52,10 +51,10 @@ def run_pipeline():
     # --------------------------------------------------------
 
     raw_df = (
-        db.fetch_pending_customers(
-            engine
-        )
+    db.fetch_all_customers(
+        engine
     )
+)
 
     if raw_df.empty:
 
@@ -290,5 +289,4 @@ def run_pipeline():
 
 
 if __name__ == "__main__":
-
     run_pipeline()
