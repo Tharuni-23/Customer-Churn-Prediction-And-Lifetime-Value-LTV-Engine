@@ -2,7 +2,7 @@ FROM nginx:alpine
 
 WORKDIR /usr/share/nginx/html
 
-COPY frontend/test_console_single_customer.html .
+COPY frontend/test_console_single_customer.html /usr/share/nginx/html/index.html
 
 EXPOSE 80
 
