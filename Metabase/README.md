@@ -25,7 +25,3 @@ Manager Dashboards
 
 
 ## Metabase Dashboard
-
-[Open Live Metabase Dashboard](Metabase/PUBLIC_LINK.md)
-
-Dashboard exports are also available in the [Metabase](Metabase/) folder.
