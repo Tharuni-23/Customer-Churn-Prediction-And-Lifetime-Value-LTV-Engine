@@ -31,7 +31,7 @@ flowchart TD
     G --> H
     H --> I[(Save Predictions to Neon)]
     I --> J[FastAPI]
-    J --> K[Frontend]
+    J --> K[Test Generator / Test Console]
     I --> L[Metabase Dashboards]
 ```
 
@@ -102,7 +102,7 @@ flowchart LR
     H --> I[("Prediction Results<br/>Neon PostgreSQL")]
 
     I --> J["FastAPI"]
-    J --> K["Frontend"]
+    J --> K["Test Generator / Test Console"]
 
     I --> L["Metabase"]
     L --> M["Churn Risk"]
@@ -151,7 +151,7 @@ Churn Probability              Predicted LTV
         ↓                 ↓
      FastAPI           Metabase
         ↓                 ↓
-    Frontend       Manager Dashboards
+    Test Generator / Test Console       Manager Dashboards
 ```
 
 The key point is that **both ML outputs are brought together before storage**, allowing churn risk and customer value to be analyzed together rather than as separate predictions.
@@ -199,12 +199,7 @@ Customer-Churn-Prediction-And-Lifetime-Value-LTV-Engine/
 │   └── ltv_model.json
 │
 ├── frontend/
-│   ├── test_console_single_customer.html
-│   │
-│   └── customer-interface/
-│       ├── manager_dashboard.html
-│       ├── manager_dashboard.css
-│       └── manager_dashboard.js
+│   └── test_console_single_customer.html
 │
 ├── testing/
 │   └── test_data_generator.py
@@ -414,7 +409,7 @@ http://127.0.0.1:8000/health
 
 ---
 
-# Frontend
+# Test Generator / Test Console
 
 The customer prediction interface is located at:
 
@@ -426,14 +421,14 @@ The frontend communicates with the FastAPI backend and displays the prediction r
 
 ```mermaid
 flowchart LR
-    A[Customer Input] --> B[Frontend]
+    A[Customer Input] --> B[Test Generator / Test Console]
     B --> C[FastAPI]
     C --> D[Prediction]
     D --> B
     B --> E[Display Result]
 ```
 
-### Frontend URL
+### Test Generator / Test Console URL
 
 ```text
 http://127.0.0.1:5500
@@ -591,7 +586,7 @@ There are **three services**:
 flowchart TB
     A[Docker Compose] --> B[API Service]
     A --> C[Scheduler Service]
-    A --> D[Frontend Service]
+    A --> D[Test Generator / Test Console Service]
 
     B --> E[FastAPI :8000]
     C --> F[Pipeline Runner]
@@ -618,9 +613,9 @@ Runs the automated prediction scheduler.
 churn-ltv-scheduler
 ```
 
-### Frontend service
+### Test Generator / Test Console service
 
-Serves the frontend through Nginx.
+Serves the Test Generator / Test Console through Nginx.
 
 ```text
 churn-ltv-frontend
@@ -642,7 +637,7 @@ flowchart TB
         subgraph DOCKER["Docker Compose"]
             direction LR
 
-            FE["Frontend Container<br/>Nginx<br/>Port 5500"]
+            FE["Test Generator / Test Console Container<br/>Nginx<br/>Port 5500"]
             API["API Container<br/>FastAPI<br/>Port 8000"]
             SCH["Scheduler Container<br/>Python Scheduler<br/>~5 min"]
         end
@@ -670,7 +665,7 @@ flowchart TB
 Local Machine
      │
      ├── Docker Compose
-     │      ├── Frontend → Nginx → :5500
+     │      ├── Test Generator / Test Console → Nginx → :5500
      │      ├── API      → FastAPI → :8000
      │      └── Scheduler → Prediction Pipeline
      │
@@ -687,7 +682,7 @@ Local Machine
 
 | Component | Runs Where | Responsibility |
 |---|---|---|
-| Frontend | Local Docker container | Serves the browser interface through Nginx |
+| Test Generator / Test Console | Local Docker container | Serves the browser interface through Nginx |
 | FastAPI | Local Docker container | Handles prediction requests and API operations |
 | Scheduler | Local Docker container | Executes the prediction pipeline approximately every 5 minutes |
 | Neon PostgreSQL | Cloud | Stores customer and prediction data |
@@ -735,7 +730,7 @@ Scheduler:
 docker compose logs scheduler
 ```
 
-Frontend:
+Test Generator / Test Console:
 
 ```bash
 docker compose logs frontend
@@ -757,7 +752,7 @@ docker compose down
 uvicorn backend.test_api_single_customer:app --host 127.0.0.1 --port 8000
 ```
 
-### Start the Frontend
+### Start the Test Generator / Test Console
 
 ```bash
 npx http-server frontend -p 5500
@@ -775,7 +770,7 @@ python -m pipeline.scheduler
 
 | Application | URL |
 |---|---|
-| Frontend | `http://127.0.0.1:5500` |
+| Test Generator / Test Console | `http://127.0.0.1:5500` |
 | API | `http://127.0.0.1:8000` |
 | Swagger | `http://127.0.0.1:8000/docs` |
 | Health Check | `http://127.0.0.1:8000/health` |
@@ -862,7 +857,7 @@ flowchart TD
     I --> J[(Save Prediction Results<br/>to Neon)]
 
     J --> K[FastAPI]
-    K --> L[Frontend]
+    K --> L[Test Generator / Test Console]
 
     J --> M[Metabase]
     M --> N[Churn Risk]
@@ -878,7 +873,7 @@ flowchart TD
 
 The project connects machine learning with the operational pieces required to use its predictions:
 
-**data storage → preprocessing → incremental processing → prediction → risk assessment → automation → API → frontend → business intelligence**
+**data storage → preprocessing → incremental processing → prediction → risk assessment → automation → API → test generator/test console → business intelligence**
 
 The complete business flow is:
 
