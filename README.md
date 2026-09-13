@@ -1,4 +1,10 @@
-# Customer Churn Prediction & Lifetime Value (LTV) Engine
+## 🎥 Project Demo
+
+[![Watch the Project Demo](https://img.youtube.com/vi/Od2Ws4k6wIM/maxresdefault.jpg)](https://youtu.be/Od2Ws4k6wIM)
+
+▶️ **[Watch the full project demonstration on YouTube](https://youtu.be/Od2Ws4k6wIM)**
+
+---# Customer Churn Prediction & Lifetime Value (LTV) Engine
 
 An end-to-end customer analytics system that predicts **customer churn**, estimates **customer lifetime value (LTV)**, assigns a **risk level**, and makes the results available through an API, web interface, scheduled pipeline, and Metabase dashboards.
 
